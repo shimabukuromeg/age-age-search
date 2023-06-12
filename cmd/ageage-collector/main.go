@@ -1,12 +1,15 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"regexp"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type Entry struct {
@@ -74,7 +77,58 @@ func findEntries(siteURL string) ([]Entry, error) {
 	return entries, nil
 }
 
+func setupDB(dsn string) (*sql.DB, error) {
+	// sql.Open("sqlite3", dsn)を用いて、指定されたデータソース（dsn）でSQLite3データベースに接続
+	db, err := sql.Open("sqlite3", dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	// テーブルを作成するQuery
+	queries := []string{
+		`CREATE TABLE IF NOT EXISTS entries(
+			article_id TEXT PRIMARY KEY,
+			title TEXT,
+			image_url TEXT,
+			store_name TEXT,
+			address TEXT,
+			site_url TEXT
+		)`,
+	}
+	for _, query := range queries {
+		_, err = db.Exec(query)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return db, nil
+}
+
+func addEntry(db *sql.DB, entry *Entry) error {
+	_, err := db.Exec(`
+        REPLACE INTO entries(article_id, title, image_url, store_name, address, site_url) values(?, ?, ?, ?, ?, ?)
+    `,
+		entry.ArticleID,
+		entry.Title,
+		entry.ImageURL,
+		entry.StoreName,
+		entry.Address,
+		entry.SiteURL,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+
 func main() {
+	db, err := setupDB("database.sqlite")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
 	listURL := "https://www.otv.co.jp/okitive/collaborator/ageage/page/1"
 	entries, err := findEntries(listURL)
 	if err != nil {
@@ -88,6 +142,12 @@ func main() {
 		fmt.Println(entry.StoreName)
 		fmt.Println(entry.Address)
 		fmt.Println(entry.SiteURL)
+
+		err = addEntry(db, &entry)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
 
 		time.Sleep(time.Second * 1)
 	}
