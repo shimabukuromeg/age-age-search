@@ -12,7 +12,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type Entry struct {
+type Meshi struct {
 	ArticleID string
 	Title     string
 	ImageURL  string
@@ -41,14 +41,14 @@ func findStoreAndAddress(siteURL string) (string, string, error) {
 	return storeName, address, nil
 }
 
-func findEntries(siteURL string) ([]Entry, error) {
+func findmeshis(siteURL string) ([]Meshi, error) {
 	// goqueryでURLからDOMオブジェクトを取得する
 	doc, err := goquery.NewDocument(siteURL)
 	if err != nil {
 		return nil, err
 	}
 	pat := regexp.MustCompile(`.*/okitive/article/([0-9]+)/$`)
-	entries := []Entry{}
+	meshis := []Meshi{}
 
 	doc.Find("ul li article a").Each(func(n int, elem *goquery.Selection) {
 		token := pat.FindStringSubmatch(elem.AttrOr("href", ""))
@@ -64,7 +64,7 @@ func findEntries(siteURL string) ([]Entry, error) {
 			log.Fatal(err)
 		}
 
-		entries = append(entries, Entry{
+		meshis = append(meshis, Meshi{
 			ArticleID: token[1],
 			Title:     title,
 			ImageURL:  imageURL,
@@ -74,7 +74,7 @@ func findEntries(siteURL string) ([]Entry, error) {
 		})
 	})
 
-	return entries, nil
+	return meshis, nil
 }
 
 func setupDB(dsn string) (*sql.DB, error) {
@@ -86,7 +86,7 @@ func setupDB(dsn string) (*sql.DB, error) {
 
 	// テーブルを作成するQuery
 	queries := []string{
-		`CREATE TABLE IF NOT EXISTS entries(
+		`CREATE TABLE IF NOT EXISTS meshis(
 			article_id TEXT PRIMARY KEY,
 			title TEXT,
 			image_url TEXT,
@@ -104,16 +104,16 @@ func setupDB(dsn string) (*sql.DB, error) {
 	return db, nil
 }
 
-func addEntry(db *sql.DB, entry *Entry) error {
+func addMeshi(db *sql.DB, Meshi *Meshi) error {
 	_, err := db.Exec(`
-        REPLACE INTO entries(article_id, title, image_url, store_name, address, site_url) values(?, ?, ?, ?, ?, ?)
+        REPLACE INTO meshis(article_id, title, image_url, store_name, address, site_url) values(?, ?, ?, ?, ?, ?)
     `,
-		entry.ArticleID,
-		entry.Title,
-		entry.ImageURL,
-		entry.StoreName,
-		entry.Address,
-		entry.SiteURL,
+		Meshi.ArticleID,
+		Meshi.Title,
+		Meshi.ImageURL,
+		Meshi.StoreName,
+		Meshi.Address,
+		Meshi.SiteURL,
 	)
 	if err != nil {
 		return err
@@ -130,20 +130,20 @@ func main() {
 	}
 	defer db.Close()
 	listURL := "https://www.otv.co.jp/okitive/collaborator/ageage/page/1"
-	entries, err := findEntries(listURL)
+	meshis, err := findmeshis(listURL)
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("found %d entries", len(entries))
-	for _, entry := range entries {
-		fmt.Println(entry.ArticleID)
-		fmt.Println(entry.Title)
-		fmt.Println(entry.ImageURL)
-		fmt.Println(entry.StoreName)
-		fmt.Println(entry.Address)
-		fmt.Println(entry.SiteURL)
+	log.Printf("found %d meshis", len(meshis))
+	for _, Meshi := range meshis {
+		fmt.Println(Meshi.ArticleID)
+		fmt.Println(Meshi.Title)
+		fmt.Println(Meshi.ImageURL)
+		fmt.Println(Meshi.StoreName)
+		fmt.Println(Meshi.Address)
+		fmt.Println(Meshi.SiteURL)
 
-		err = addEntry(db, &entry)
+		err = addMeshi(db, &Meshi)
 		if err != nil {
 			log.Println(err)
 			continue
