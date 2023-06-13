@@ -88,10 +88,12 @@ func findMeshis(siteURL string) ([]Meshi, error) {
 
 var dbType string
 var dsn string
+var target string
 
 func init() {
 	flag.StringVar(&dbType, "t", "sqlite3", "Type of DB (sqlite or postgres)")
 	flag.StringVar(&dsn, "d", "database.sqlite", "Database Data Source Name")
+	flag.StringVar(&target, "target", "first", "target page (all or first)")
 	flag.Parse()
 
 	if os.Getenv("DSN") != "" {
@@ -255,8 +257,6 @@ func addMeshi(db *sql.DB, meshi *Meshi) error {
 	return nil
 }
 
-
-
 func main() {
 	flag.Parse()
 
@@ -273,26 +273,39 @@ func main() {
 		log.Fatal(err)
 	}
 	defer db.Close()
-	listURL := "https://www.otv.co.jp/okitive/collaborator/ageage/page/1"
-	meshis, err := findMeshis(listURL)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Printf("found %d meshis", len(meshis))
-	for _, Meshi := range meshis {
-		fmt.Println(Meshi.ArticleID)
-		fmt.Println(Meshi.Title)
-		fmt.Println(Meshi.ImageURL)
-		fmt.Println(Meshi.StoreName)
-		fmt.Println(Meshi.Address)
-		fmt.Println(Meshi.SiteURL)
 
-		err = addMeshi(db, &Meshi)
+	baseURL := "https://www.otv.co.jp/okitive/collaborator/ageage/page/%d"
+	page := 1
+	for {
+		listURL := fmt.Sprintf(baseURL, page)
+		meshis, err := findMeshis(listURL)
 		if err != nil {
-			log.Println(err)
-			continue
+			log.Fatal(err)
 		}
+		log.Printf("found %d meshis", len(meshis))
+		if len(meshis) == 0 {
+			break
+		}
+		for _, Meshi := range meshis {
+			fmt.Println(Meshi.ArticleID)
+			fmt.Println(Meshi.Title)
+			fmt.Println(Meshi.ImageURL)
+			fmt.Println(Meshi.StoreName)
+			fmt.Println(Meshi.Address)
+			fmt.Println(Meshi.SiteURL)
 
-		time.Sleep(time.Second * 1)
+			err = addMeshi(db, &Meshi)
+			if err != nil {
+				log.Println(err)
+				continue
+			}
+
+			time.Sleep(time.Second * 1)
+		}
+		if (target == "first") {
+			break
+		}
+		page++
 	}
+	fmt.Println("done")
 }
