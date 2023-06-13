@@ -1,6 +1,6 @@
 # age-age-search
 
-This tool scrapes information from a designated website and saves it into a SQLite or PostgreSQL database.
+This tool scrapes information from a designated [ageage](https://www.otv.co.jp/okitive/collaborator/ageage/page/1/) website and saves it into a SQLite or PostgreSQL database.
 
 ## Setup and Running
 
@@ -11,6 +11,12 @@ $ go build -o age-age-search cmd/ageage-collector/main.go
 ```
 
 This will start the tool with default settings. By default, it uses a SQLite database (database.sqlite).
+
+### Using SQLite
+
+```bash
+$ ./age-age-search
+```
 
 ### Using PostgreSQL
 
