@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"flag"
 	"fmt"
 	"log"
 	"regexp"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 
+	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -83,30 +85,69 @@ func findMeshis(siteURL string) ([]Meshi, error) {
 	return meshis, nil
 }
 
-func setupDB(dsn string) (*sql.DB, error) {
-	// sql.Open("sqlite3", dsn)を用いて、指定されたデータソース（dsn）でSQLite3データベースに接続
-	db, err := sql.Open("sqlite3", dsn)
-	if err != nil {
-		return nil, err
+var dbType string
+var dbInfo string
+
+func init() {
+	flag.StringVar(&dbType, "t", "sqlite3", "Type of DB (sqlite or postgres)")
+	flag.StringVar(&dbInfo, "d", "database.sqlite", "DB info: sqlite - file path, postgres - connection string")
+}
+func setupDB(dbType, dsn string) (*sql.DB, error) {
+	var db *sql.DB
+	var err error
+	var queries []string
+
+	switch dbType {
+	case "sqlite3":
+		db, err = sql.Open("sqlite3", dsn)
+		if err != nil {
+			return nil, err
+		}
+
+		queries = []string{
+			`CREATE TABLE IF NOT EXISTS municipalities(
+				id INTEGER PRIMARY KEY,
+				name TEXT NOT NULL UNIQUE
+			)`,
+			`CREATE TABLE IF NOT EXISTS meshis(
+				id INTEGER PRIMARY KEY,
+				article_id TEXT NOT NULL UNIQUE,
+				title TEXT,
+				image_url TEXT,
+				store_name TEXT,
+				address TEXT,
+				site_url TEXT,
+				municipality_id INTEGER,
+				FOREIGN KEY(municipality_id) REFERENCES municipalities(id)
+			)`,
+		}
+	case "postgres":
+		db, err = sql.Open("postgres", dsn)
+		if err != nil {
+			return nil, err
+		}
+
+		queries = []string{
+			`CREATE TABLE IF NOT EXISTS municipalities(
+				id SERIAL PRIMARY KEY,
+				name TEXT NOT NULL UNIQUE
+			)`,
+			`CREATE TABLE IF NOT EXISTS meshis(
+				id SERIAL PRIMARY KEY,
+				article_id TEXT NOT NULL UNIQUE,
+				title TEXT,
+				image_url TEXT,
+				store_name TEXT,
+				address TEXT,
+				site_url TEXT,
+				municipality_id INTEGER,
+				FOREIGN KEY(municipality_id) REFERENCES municipalities(id)
+			)`,
+		}
+	default:
+		return nil, fmt.Errorf("Unknown database type: %s", dbType)
 	}
 
-	// テーブルを作成するQuery
-	queries := []string{
-		`CREATE TABLE IF NOT EXISTS meshis(
-			article_id TEXT PRIMARY KEY,
-			title TEXT,
-			image_url TEXT,
-			store_name TEXT,
-			address TEXT,
-			site_url TEXT,
-			municipality_id INTEGER,
-			FOREIGN KEY(municipality_id) REFERENCES municipalities(id)
-		)`,
-		`CREATE TABLE IF NOT EXISTS municipalities(
-			id INTEGER PRIMARY KEY,
-			name TEXT NOT NULL UNIQUE
-		)`,
-	}
 	for _, query := range queries {
 		_, err = db.Exec(query)
 		if err != nil {
@@ -131,45 +172,91 @@ func addMeshi(db *sql.DB, meshi *Meshi) error {
 		return err
 	}
 	var municipalityID int
-	err = db.QueryRow("SELECT id FROM municipalities WHERE name = ?", municipality).Scan(&municipalityID)
-	if err == sql.ErrNoRows {
-		// If the municipality doesn't exist, insert it and get its ID
-		res, err := db.Exec("INSERT INTO municipalities(name) VALUES(?)", municipality)
-		if err != nil {
+	switch dbType {
+	case "sqlite3":
+		err = db.QueryRow("SELECT id FROM municipalities WHERE name = ?", municipality).Scan(&municipalityID)
+		if err == sql.ErrNoRows {
+			// If the municipality doesn't exist, insert it and get its ID
+			res, err := db.Exec("INSERT INTO municipalities(name) VALUES(?)", municipality)
+			if err != nil {
+				return err
+			}
+			lastID, err := res.LastInsertId()
+			if err != nil {
+				return err
+			}
+			municipalityID = int(lastID)
+		} else if err != nil {
+			// If another error occurred, return it
 			return err
 		}
-		lastID, err := res.LastInsertId()
-		fmt.Println("lastID: ", lastID)
-		if err != nil {
-			return err
-		}
-		municipalityID = int(lastID)
-	} else if err != nil {
-		// If another error occurred, return it
-		return err
-	}
 
-	_, err = db.Exec(`
-        REPLACE INTO meshis(article_id, title, image_url, store_name, address, site_url, municipality_id) values(?, ?, ?, ?, ?, ?, ?)
-    `,
-		meshi.ArticleID,
-		meshi.Title,
-		meshi.ImageURL,
-		meshi.StoreName,
-		meshi.Address,
-		meshi.SiteURL,
-		municipalityID,
-	)
-	if err != nil {
-		return err
+		_, err = db.Exec(`
+	        REPLACE INTO meshis(article_id, title, image_url, store_name, address, site_url, municipality_id) VALUES(?, ?, ?, ?, ?, ?, ?)
+	    `,
+			meshi.ArticleID,
+			meshi.Title,
+			meshi.ImageURL,
+			meshi.StoreName,
+			meshi.Address,
+			meshi.SiteURL,
+			municipalityID,
+		)
+		if err != nil {
+			return err
+		}
+
+	case "postgres":
+		err = db.QueryRow("SELECT id FROM municipalities WHERE name = $1", municipality).Scan(&municipalityID)
+		if err == sql.ErrNoRows {
+			// If the municipality doesn't exist, insert it and get its ID
+			err = db.QueryRow("INSERT INTO municipalities(name) VALUES($1) RETURNING id", municipality).Scan(&municipalityID)
+			if err != nil {
+				return err
+			}
+		} else if err != nil {
+			// If another error occurred, return it
+			return err
+		}
+
+		// PostgreSQL does not support the REPLACE statement, so we use an INSERT statement with the ON CONFLICT DO UPDATE clause.
+		_, err = db.Exec(`
+	        INSERT INTO meshis(article_id, title, image_url, store_name, address, site_url, municipality_id) VALUES($1, $2, $3, $4, $5, $6, $7)
+	        ON CONFLICT (article_id) DO UPDATE SET title = excluded.title, image_url = excluded.image_url, store_name = excluded.store_name, address = excluded.address, site_url = excluded.site_url, municipality_id = excluded.municipality_id
+	    `,
+			meshi.ArticleID,
+			meshi.Title,
+			meshi.ImageURL,
+			meshi.StoreName,
+			meshi.Address,
+			meshi.SiteURL,
+			municipalityID,
+		)
+		if err != nil {
+			return err
+		}
+
+	default:
+		return fmt.Errorf("Unknown database type: %s", dbType)
 	}
 
 	return nil
 }
 
 
+
 func main() {
-	db, err := setupDB("database.sqlite")
+	flag.Parse()
+
+	var db *sql.DB
+	var err error
+
+	if dbType == "sqlite3" || dbType == "postgres" {
+		db, err = setupDB(dbType, dbInfo)
+	} else {
+		log.Fatalf("Unsupported DB type '%s'. Only 'sqlite' and 'postgres' are supported.", dbType)
+	}
+
 	if err != nil {
 		log.Fatal(err)
 	}
