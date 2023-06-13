@@ -7,7 +7,7 @@ This tool scrapes information from a designated [ageage](https://www.otv.co.jp/o
 This project is written in Go and requires a Go development environment. Please make sure you have Go installed and your PATH is set properly.
 
 ```bash
-$ go build -o age-age-search cmd/ageage-collector/main.go
+$ go build -o ageage-collector cmd/ageage-collector/main.go
 ```
 
 This will start the tool with default settings. By default, it uses a SQLite database (database.sqlite).
@@ -15,7 +15,7 @@ This will start the tool with default settings. By default, it uses a SQLite dat
 ### Using SQLite
 
 ```bash
-$ ./age-age-search
+$ ./ageage-collector
 ```
 
 ### Using PostgreSQL
@@ -25,7 +25,7 @@ You can switch to a PostgreSQL database by using the -t option. You can specify 
 ```bash
 $ docker-compose up -d
 $ export DSN="postgresql://postgres@localhost:5555/ageagedb?sslmode=disable"
-$ ./age-age-search
+$ ./ageage-collector
 ```
 
 If you specify -t postgres but do not specify -d or DSN, the tool will prompt you to provide the PostgreSQL connection information.
