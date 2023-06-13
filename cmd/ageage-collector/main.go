@@ -19,6 +19,12 @@ type Meshi struct {
 	StoreName string
 	Address   string
 	SiteURL   string
+	MunicipalityID int
+}
+
+type Municipality struct {
+	ID   int
+	Name string
 }
 
 func findStoreAndAddress(siteURL string) (string, string, error) {
@@ -92,7 +98,13 @@ func setupDB(dsn string) (*sql.DB, error) {
 			image_url TEXT,
 			store_name TEXT,
 			address TEXT,
-			site_url TEXT
+			site_url TEXT,
+			municipality_id INTEGER,
+			FOREIGN KEY(municipality_id) REFERENCES municipalities(id)
+		)`,
+		`CREATE TABLE IF NOT EXISTS municipalities(
+			id INTEGER PRIMARY KEY,
+			name TEXT NOT NULL UNIQUE
 		)`,
 	}
 	for _, query := range queries {
@@ -104,16 +116,49 @@ func setupDB(dsn string) (*sql.DB, error) {
 	return db, nil
 }
 
-func addMeshi(db *sql.DB, Meshi *Meshi) error {
-	_, err := db.Exec(`
-        REPLACE INTO meshis(article_id, title, image_url, store_name, address, site_url) values(?, ?, ?, ?, ?, ?)
+func getMunicipality(address string) (string, error) {
+	r := regexp.MustCompile(`沖縄県([^市町村]*?[市町村])`)
+	match := r.FindStringSubmatch(address)
+	if len(match) > 1 {
+		return match[1], nil // 市町村名を返す
+	}
+	return "", fmt.Errorf("unable to find municipality in: %s", address)
+}
+
+func addMeshi(db *sql.DB, meshi *Meshi) error {
+	municipality, err := getMunicipality(meshi.Address)
+	if err != nil {
+		return err
+	}
+	var municipalityID int
+	err = db.QueryRow("SELECT id FROM municipalities WHERE name = ?", municipality).Scan(&municipalityID)
+	if err == sql.ErrNoRows {
+		// If the municipality doesn't exist, insert it and get its ID
+		res, err := db.Exec("INSERT INTO municipalities(name) VALUES(?)", municipality)
+		if err != nil {
+			return err
+		}
+		lastID, err := res.LastInsertId()
+		fmt.Println("lastID: ", lastID)
+		if err != nil {
+			return err
+		}
+		municipalityID = int(lastID)
+	} else if err != nil {
+		// If another error occurred, return it
+		return err
+	}
+
+	_, err = db.Exec(`
+        REPLACE INTO meshis(article_id, title, image_url, store_name, address, site_url, municipality_id) values(?, ?, ?, ?, ?, ?, ?)
     `,
-		Meshi.ArticleID,
-		Meshi.Title,
-		Meshi.ImageURL,
-		Meshi.StoreName,
-		Meshi.Address,
-		Meshi.SiteURL,
+		meshi.ArticleID,
+		meshi.Title,
+		meshi.ImageURL,
+		meshi.StoreName,
+		meshi.Address,
+		meshi.SiteURL,
+		municipalityID,
 	)
 	if err != nil {
 		return err
