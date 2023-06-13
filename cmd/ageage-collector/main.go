@@ -86,12 +86,18 @@ func findMeshis(siteURL string) ([]Meshi, error) {
 }
 
 var dbType string
-var dbInfo string
+var dsn string
 
 func init() {
 	flag.StringVar(&dbType, "t", "sqlite3", "Type of DB (sqlite or postgres)")
-	flag.StringVar(&dbInfo, "d", "database.sqlite", "DB info: sqlite - file path, postgres - connection string")
+	flag.StringVar(&dsn, "d", "database.sqlite", "Database Data Source Name")
+	flag.Parse()
+
+	if dbType == "postgres" && dsn == "database.sqlite" {
+		log.Fatal("When -t postgres is specified, you must specify -d with the PostgreSQL connection string. e.g. -d=postgresql://postgres@localhost:5555/ageagedb?sslmode=disable")
+	}
 }
+
 func setupDB(dbType, dsn string) (*sql.DB, error) {
 	var db *sql.DB
 	var err error
@@ -252,7 +258,7 @@ func main() {
 	var err error
 
 	if dbType == "sqlite3" || dbType == "postgres" {
-		db, err = setupDB(dbType, dbInfo)
+		db, err = setupDB(dbType, dsn)
 	} else {
 		log.Fatalf("Unsupported DB type '%s'. Only 'sqlite' and 'postgres' are supported.", dbType)
 	}
