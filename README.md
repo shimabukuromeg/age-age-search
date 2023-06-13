@@ -12,6 +12,12 @@ $ go build -o age-age-search cmd/ageage-collector/main.go
 
 This will start the tool with default settings. By default, it uses a SQLite database (database.sqlite).
 
+### Using SQLite
+
+```bash
+$ ./age-age-search
+```
+
 ### Using PostgreSQL
 
 You can switch to a PostgreSQL database by using the -t option. You can specify the PostgreSQL connection information using the -d option or the DSN environment variable.
