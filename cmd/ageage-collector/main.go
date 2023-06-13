@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 	"regexp"
 	"time"
 
@@ -92,6 +93,11 @@ func init() {
 	flag.StringVar(&dbType, "t", "sqlite3", "Type of DB (sqlite or postgres)")
 	flag.StringVar(&dsn, "d", "database.sqlite", "Database Data Source Name")
 	flag.Parse()
+
+	if os.Getenv("DSN") != "" {
+		dsn = os.Getenv("DSN")
+		dbType = "postgres"
+	}
 
 	if dbType == "postgres" && dsn == "database.sqlite" {
 		log.Fatal("When -t postgres is specified, you must specify -d with the PostgreSQL connection string. e.g. -d=postgresql://postgres@localhost:5555/ageagedb?sslmode=disable")
