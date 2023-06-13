@@ -1,6 +1,6 @@
 # age-age-search
 
-This tool scrapes information from a designated website and saves it into a SQLite or PostgreSQL database.
+This tool scrapes information from a designated [ageage](https://www.otv.co.jp/okitive/collaborator/ageage/page/1/) website and saves it into a SQLite or PostgreSQL database.
 
 ## Setup and Running
 
