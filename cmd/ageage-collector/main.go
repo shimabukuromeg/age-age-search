@@ -47,7 +47,7 @@ func findStoreAndAddress(siteURL string) (string, string, error) {
 	return storeName, address, nil
 }
 
-func findmeshis(siteURL string) ([]Meshi, error) {
+func findMeshis(siteURL string) ([]Meshi, error) {
 	// goqueryでURLからDOMオブジェクトを取得する
 	doc, err := goquery.NewDocument(siteURL)
 	if err != nil {
@@ -175,7 +175,7 @@ func main() {
 	}
 	defer db.Close()
 	listURL := "https://www.otv.co.jp/okitive/collaborator/ageage/page/1"
-	meshis, err := findmeshis(listURL)
+	meshis, err := findMeshis(listURL)
 	if err != nil {
 		log.Fatal(err)
 	}
