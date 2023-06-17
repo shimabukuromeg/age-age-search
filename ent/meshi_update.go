@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -104,6 +105,40 @@ func (mu *MeshiUpdate) SetNillableSiteURL(s *string) *MeshiUpdate {
 	return mu
 }
 
+// SetPublishedDate sets the "published_date" field.
+func (mu *MeshiUpdate) SetPublishedDate(t time.Time) *MeshiUpdate {
+	mu.mutation.SetPublishedDate(t)
+	return mu
+}
+
+// SetNillablePublishedDate sets the "published_date" field if the given value is not nil.
+func (mu *MeshiUpdate) SetNillablePublishedDate(t *time.Time) *MeshiUpdate {
+	if t != nil {
+		mu.SetPublishedDate(*t)
+	}
+	return mu
+}
+
+// ClearPublishedDate clears the value of the "published_date" field.
+func (mu *MeshiUpdate) ClearPublishedDate() *MeshiUpdate {
+	mu.mutation.ClearPublishedDate()
+	return mu
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (mu *MeshiUpdate) SetCreatedAt(t time.Time) *MeshiUpdate {
+	mu.mutation.SetCreatedAt(t)
+	return mu
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (mu *MeshiUpdate) SetNillableCreatedAt(t *time.Time) *MeshiUpdate {
+	if t != nil {
+		mu.SetCreatedAt(*t)
+	}
+	return mu
+}
+
 // SetMunicipalityID sets the "municipality" edge to the Municipality entity by ID.
 func (mu *MeshiUpdate) SetMunicipalityID(id int) *MeshiUpdate {
 	mu.mutation.SetMunicipalityID(id)
@@ -187,6 +222,15 @@ func (mu *MeshiUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := mu.mutation.SiteURL(); ok {
 		_spec.SetField(meshi.FieldSiteURL, field.TypeString, value)
+	}
+	if value, ok := mu.mutation.PublishedDate(); ok {
+		_spec.SetField(meshi.FieldPublishedDate, field.TypeTime, value)
+	}
+	if mu.mutation.PublishedDateCleared() {
+		_spec.ClearField(meshi.FieldPublishedDate, field.TypeTime)
+	}
+	if value, ok := mu.mutation.CreatedAt(); ok {
+		_spec.SetField(meshi.FieldCreatedAt, field.TypeTime, value)
 	}
 	if mu.mutation.MunicipalityCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -313,6 +357,40 @@ func (muo *MeshiUpdateOne) SetNillableSiteURL(s *string) *MeshiUpdateOne {
 	return muo
 }
 
+// SetPublishedDate sets the "published_date" field.
+func (muo *MeshiUpdateOne) SetPublishedDate(t time.Time) *MeshiUpdateOne {
+	muo.mutation.SetPublishedDate(t)
+	return muo
+}
+
+// SetNillablePublishedDate sets the "published_date" field if the given value is not nil.
+func (muo *MeshiUpdateOne) SetNillablePublishedDate(t *time.Time) *MeshiUpdateOne {
+	if t != nil {
+		muo.SetPublishedDate(*t)
+	}
+	return muo
+}
+
+// ClearPublishedDate clears the value of the "published_date" field.
+func (muo *MeshiUpdateOne) ClearPublishedDate() *MeshiUpdateOne {
+	muo.mutation.ClearPublishedDate()
+	return muo
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (muo *MeshiUpdateOne) SetCreatedAt(t time.Time) *MeshiUpdateOne {
+	muo.mutation.SetCreatedAt(t)
+	return muo
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (muo *MeshiUpdateOne) SetNillableCreatedAt(t *time.Time) *MeshiUpdateOne {
+	if t != nil {
+		muo.SetCreatedAt(*t)
+	}
+	return muo
+}
+
 // SetMunicipalityID sets the "municipality" edge to the Municipality entity by ID.
 func (muo *MeshiUpdateOne) SetMunicipalityID(id int) *MeshiUpdateOne {
 	muo.mutation.SetMunicipalityID(id)
@@ -426,6 +504,15 @@ func (muo *MeshiUpdateOne) sqlSave(ctx context.Context) (_node *Meshi, err error
 	}
 	if value, ok := muo.mutation.SiteURL(); ok {
 		_spec.SetField(meshi.FieldSiteURL, field.TypeString, value)
+	}
+	if value, ok := muo.mutation.PublishedDate(); ok {
+		_spec.SetField(meshi.FieldPublishedDate, field.TypeTime, value)
+	}
+	if muo.mutation.PublishedDateCleared() {
+		_spec.ClearField(meshi.FieldPublishedDate, field.TypeTime)
+	}
+	if value, ok := muo.mutation.CreatedAt(); ok {
+		_spec.SetField(meshi.FieldCreatedAt, field.TypeTime, value)
 	}
 	if muo.mutation.MunicipalityCleared() {
 		edge := &sqlgraph.EdgeSpec{

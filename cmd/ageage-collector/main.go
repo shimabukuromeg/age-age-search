@@ -25,6 +25,7 @@ type Article struct {
 	StoreName      string
 	Address        string
 	SiteURL        string
+	PublishedDate  string
 	MunicipalityID int
 }
 
@@ -63,6 +64,7 @@ func FindArticles(siteURL string) ([]Article, error) {
 			return
 		}
 		title := elem.Find("p").Text()
+		publishedDate := elem.Find("time").Text()
 		imageURL := elem.Find("img").AttrOr("src", "")
 		siteURL := elem.AttrOr("href", "")
 		storeName, address, err := FindStoreAndAddress(siteURL)
@@ -72,12 +74,13 @@ func FindArticles(siteURL string) ([]Article, error) {
 		}
 
 		articles = append(articles, Article{
-			ArticleID: token[1],
-			Title:     title,
-			ImageURL:  imageURL,
-			StoreName: storeName,
-			Address:   address,
-			SiteURL:   siteURL,
+			ArticleID:     token[1],
+			Title:         title,
+			ImageURL:      imageURL,
+			StoreName:     storeName,
+			Address:       address,
+			SiteURL:       siteURL,
+			PublishedDate: publishedDate,
 		})
 	})
 
@@ -128,15 +131,23 @@ func GetMunicipality(address string) (string, error) {
 	return "", fmt.Errorf("unable to find municipality in: %s", address)
 }
 
-func CreateMeshi(ctx context.Context, client *ent.Client, m *Article) (*ent.Meshi, error) {
+func CreateMeshi(ctx context.Context, client *ent.Client, article *Article) (*ent.Meshi, error) {
+	layout := "2006/01/02"
+	parsedTime, err := time.Parse(layout, article.PublishedDate)
+	if err != nil {
+		// handle error
+		fmt.Println(err)
+	}
+
 	id, err := client.Meshi.
 		Create().
-		SetArticleID(m.ArticleID).
-		SetTitle(m.Title).
-		SetImageURL(m.ImageURL).
-		SetStoreName(m.StoreName).
-		SetAddress(m.Address).
-		SetSiteURL(m.SiteURL).
+		SetArticleID(article.ArticleID).
+		SetTitle(article.Title).
+		SetImageURL(article.ImageURL).
+		SetStoreName(article.StoreName).
+		SetAddress(article.Address).
+		SetSiteURL(article.SiteURL).
+		SetPublishedDate(parsedTime).
 		OnConflictColumns("article_id").
 		UpdateNewValues().
 		ID(ctx)
@@ -155,8 +166,8 @@ func CreateMeshi(ctx context.Context, client *ent.Client, m *Article) (*ent.Mesh
 	return createdMeshi, nil
 }
 
-func CreateMunicipality(ctx context.Context, client *ent.Client, m *Article) (*ent.Municipality, error) {
-	name, err := GetMunicipality(m.Address)
+func CreateMunicipality(ctx context.Context, client *ent.Client, article *Article) (*ent.Municipality, error) {
+	name, err := GetMunicipality(article.Address)
 	if err != nil {
 		return nil, fmt.Errorf("failed getting municipalityName: %w", err)
 	}
@@ -202,12 +213,7 @@ func main() {
 			break
 		}
 		for _, article := range articles {
-			// fmt.Println(Meshi.ArticleID)
-			// fmt.Println(Meshi.Title)
-			// fmt.Println(Meshi.ImageURL)
-			// fmt.Println(Meshi.StoreName)
-			// fmt.Println(Meshi.Address)
-			// fmt.Println(Meshi.SiteURL)
+			fmt.Println(article)
 
 			meshi, err := CreateMeshi(context.Background(), client, &article)
 			if err != nil {

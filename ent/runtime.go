@@ -3,7 +3,10 @@
 package ent
 
 import (
+	"time"
+
 	"github.com/shimabukuromeg/ageage-search/ent/meshi"
+	"github.com/shimabukuromeg/ageage-search/ent/municipality"
 	"github.com/shimabukuromeg/ageage-search/ent/schema"
 )
 
@@ -33,4 +36,14 @@ func init() {
 	meshiDescSiteURL := meshiFields[5].Descriptor()
 	// meshi.DefaultSiteURL holds the default value on creation for the site_url field.
 	meshi.DefaultSiteURL = meshiDescSiteURL.Default.(string)
+	// meshiDescCreatedAt is the schema descriptor for created_at field.
+	meshiDescCreatedAt := meshiFields[7].Descriptor()
+	// meshi.DefaultCreatedAt holds the default value on creation for the created_at field.
+	meshi.DefaultCreatedAt = meshiDescCreatedAt.Default.(func() time.Time)
+	municipalityFields := schema.Municipality{}.Fields()
+	_ = municipalityFields
+	// municipalityDescCreatedAt is the schema descriptor for created_at field.
+	municipalityDescCreatedAt := municipalityFields[1].Descriptor()
+	// municipality.DefaultCreatedAt holds the default value on creation for the created_at field.
+	municipality.DefaultCreatedAt = municipalityDescCreatedAt.Default.(func() time.Time)
 }

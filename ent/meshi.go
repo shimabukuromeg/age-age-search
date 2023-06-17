@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -29,6 +30,10 @@ type Meshi struct {
 	Address string `json:"address,omitempty"`
 	// SiteURL holds the value of the "site_url" field.
 	SiteURL string `json:"site_url,omitempty"`
+	// PublishedDate holds the value of the "published_date" field.
+	PublishedDate *time.Time `json:"published_date,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MeshiQuery when eager-loading is set.
 	Edges               MeshiEdges `json:"edges"`
@@ -67,6 +72,8 @@ func (*Meshi) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case meshi.FieldArticleID, meshi.FieldTitle, meshi.FieldImageURL, meshi.FieldStoreName, meshi.FieldAddress, meshi.FieldSiteURL:
 			values[i] = new(sql.NullString)
+		case meshi.FieldPublishedDate, meshi.FieldCreatedAt:
+			values[i] = new(sql.NullTime)
 		case meshi.ForeignKeys[0]: // municipality_meshis
 			values[i] = new(sql.NullInt64)
 		default:
@@ -125,6 +132,19 @@ func (m *Meshi) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field site_url", values[i])
 			} else if value.Valid {
 				m.SiteURL = value.String
+			}
+		case meshi.FieldPublishedDate:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field published_date", values[i])
+			} else if value.Valid {
+				m.PublishedDate = new(time.Time)
+				*m.PublishedDate = value.Time
+			}
+		case meshi.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				m.CreatedAt = value.Time
 			}
 		case meshi.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -191,6 +211,14 @@ func (m *Meshi) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("site_url=")
 	builder.WriteString(m.SiteURL)
+	builder.WriteString(", ")
+	if v := m.PublishedDate; v != nil {
+		builder.WriteString("published_date=")
+		builder.WriteString(v.Format(time.ANSIC))
+	}
+	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(m.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

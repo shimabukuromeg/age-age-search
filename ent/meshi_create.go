@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -98,6 +99,34 @@ func (mc *MeshiCreate) SetNillableSiteURL(s *string) *MeshiCreate {
 	return mc
 }
 
+// SetPublishedDate sets the "published_date" field.
+func (mc *MeshiCreate) SetPublishedDate(t time.Time) *MeshiCreate {
+	mc.mutation.SetPublishedDate(t)
+	return mc
+}
+
+// SetNillablePublishedDate sets the "published_date" field if the given value is not nil.
+func (mc *MeshiCreate) SetNillablePublishedDate(t *time.Time) *MeshiCreate {
+	if t != nil {
+		mc.SetPublishedDate(*t)
+	}
+	return mc
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (mc *MeshiCreate) SetCreatedAt(t time.Time) *MeshiCreate {
+	mc.mutation.SetCreatedAt(t)
+	return mc
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (mc *MeshiCreate) SetNillableCreatedAt(t *time.Time) *MeshiCreate {
+	if t != nil {
+		mc.SetCreatedAt(*t)
+	}
+	return mc
+}
+
 // SetMunicipalityID sets the "municipality" edge to the Municipality entity by ID.
 func (mc *MeshiCreate) SetMunicipalityID(id int) *MeshiCreate {
 	mc.mutation.SetMunicipalityID(id)
@@ -172,6 +201,10 @@ func (mc *MeshiCreate) defaults() {
 		v := meshi.DefaultSiteURL
 		mc.mutation.SetSiteURL(v)
 	}
+	if _, ok := mc.mutation.CreatedAt(); !ok {
+		v := meshi.DefaultCreatedAt()
+		mc.mutation.SetCreatedAt(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -193,6 +226,9 @@ func (mc *MeshiCreate) check() error {
 	}
 	if _, ok := mc.mutation.SiteURL(); !ok {
 		return &ValidationError{Name: "site_url", err: errors.New(`ent: missing required field "Meshi.site_url"`)}
+	}
+	if _, ok := mc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Meshi.created_at"`)}
 	}
 	return nil
 }
@@ -244,6 +280,14 @@ func (mc *MeshiCreate) createSpec() (*Meshi, *sqlgraph.CreateSpec) {
 	if value, ok := mc.mutation.SiteURL(); ok {
 		_spec.SetField(meshi.FieldSiteURL, field.TypeString, value)
 		_node.SiteURL = value
+	}
+	if value, ok := mc.mutation.PublishedDate(); ok {
+		_spec.SetField(meshi.FieldPublishedDate, field.TypeTime, value)
+		_node.PublishedDate = &value
+	}
+	if value, ok := mc.mutation.CreatedAt(); ok {
+		_spec.SetField(meshi.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
 	}
 	if nodes := mc.mutation.MunicipalityIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -386,6 +430,36 @@ func (u *MeshiUpsert) UpdateSiteURL() *MeshiUpsert {
 	return u
 }
 
+// SetPublishedDate sets the "published_date" field.
+func (u *MeshiUpsert) SetPublishedDate(v time.Time) *MeshiUpsert {
+	u.Set(meshi.FieldPublishedDate, v)
+	return u
+}
+
+// UpdatePublishedDate sets the "published_date" field to the value that was provided on create.
+func (u *MeshiUpsert) UpdatePublishedDate() *MeshiUpsert {
+	u.SetExcluded(meshi.FieldPublishedDate)
+	return u
+}
+
+// ClearPublishedDate clears the value of the "published_date" field.
+func (u *MeshiUpsert) ClearPublishedDate() *MeshiUpsert {
+	u.SetNull(meshi.FieldPublishedDate)
+	return u
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *MeshiUpsert) SetCreatedAt(v time.Time) *MeshiUpsert {
+	u.Set(meshi.FieldCreatedAt, v)
+	return u
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *MeshiUpsert) UpdateCreatedAt() *MeshiUpsert {
+	u.SetExcluded(meshi.FieldCreatedAt)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create.
 // Using this option is equivalent to using:
 //
@@ -507,6 +581,41 @@ func (u *MeshiUpsertOne) SetSiteURL(v string) *MeshiUpsertOne {
 func (u *MeshiUpsertOne) UpdateSiteURL() *MeshiUpsertOne {
 	return u.Update(func(s *MeshiUpsert) {
 		s.UpdateSiteURL()
+	})
+}
+
+// SetPublishedDate sets the "published_date" field.
+func (u *MeshiUpsertOne) SetPublishedDate(v time.Time) *MeshiUpsertOne {
+	return u.Update(func(s *MeshiUpsert) {
+		s.SetPublishedDate(v)
+	})
+}
+
+// UpdatePublishedDate sets the "published_date" field to the value that was provided on create.
+func (u *MeshiUpsertOne) UpdatePublishedDate() *MeshiUpsertOne {
+	return u.Update(func(s *MeshiUpsert) {
+		s.UpdatePublishedDate()
+	})
+}
+
+// ClearPublishedDate clears the value of the "published_date" field.
+func (u *MeshiUpsertOne) ClearPublishedDate() *MeshiUpsertOne {
+	return u.Update(func(s *MeshiUpsert) {
+		s.ClearPublishedDate()
+	})
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *MeshiUpsertOne) SetCreatedAt(v time.Time) *MeshiUpsertOne {
+	return u.Update(func(s *MeshiUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *MeshiUpsertOne) UpdateCreatedAt() *MeshiUpsertOne {
+	return u.Update(func(s *MeshiUpsert) {
+		s.UpdateCreatedAt()
 	})
 }
 
@@ -791,6 +900,41 @@ func (u *MeshiUpsertBulk) SetSiteURL(v string) *MeshiUpsertBulk {
 func (u *MeshiUpsertBulk) UpdateSiteURL() *MeshiUpsertBulk {
 	return u.Update(func(s *MeshiUpsert) {
 		s.UpdateSiteURL()
+	})
+}
+
+// SetPublishedDate sets the "published_date" field.
+func (u *MeshiUpsertBulk) SetPublishedDate(v time.Time) *MeshiUpsertBulk {
+	return u.Update(func(s *MeshiUpsert) {
+		s.SetPublishedDate(v)
+	})
+}
+
+// UpdatePublishedDate sets the "published_date" field to the value that was provided on create.
+func (u *MeshiUpsertBulk) UpdatePublishedDate() *MeshiUpsertBulk {
+	return u.Update(func(s *MeshiUpsert) {
+		s.UpdatePublishedDate()
+	})
+}
+
+// ClearPublishedDate clears the value of the "published_date" field.
+func (u *MeshiUpsertBulk) ClearPublishedDate() *MeshiUpsertBulk {
+	return u.Update(func(s *MeshiUpsert) {
+		s.ClearPublishedDate()
+	})
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *MeshiUpsertBulk) SetCreatedAt(v time.Time) *MeshiUpsertBulk {
+	return u.Update(func(s *MeshiUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *MeshiUpsertBulk) UpdateCreatedAt() *MeshiUpsertBulk {
+	return u.Update(func(s *MeshiUpsert) {
+		s.UpdateCreatedAt()
 	})
 }
 

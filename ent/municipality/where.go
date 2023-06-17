@@ -3,6 +3,8 @@
 package municipality
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/shimabukuromeg/ageage-search/ent/predicate"
@@ -56,6 +58,11 @@ func IDLTE(id int) predicate.Municipality {
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
 func Name(v string) predicate.Municipality {
 	return predicate.Municipality(sql.FieldEQ(FieldName, v))
+}
+
+// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
+func CreatedAt(v time.Time) predicate.Municipality {
+	return predicate.Municipality(sql.FieldEQ(FieldCreatedAt, v))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.
@@ -121,6 +128,46 @@ func NameEqualFold(v string) predicate.Municipality {
 // NameContainsFold applies the ContainsFold predicate on the "name" field.
 func NameContainsFold(v string) predicate.Municipality {
 	return predicate.Municipality(sql.FieldContainsFold(FieldName, v))
+}
+
+// CreatedAtEQ applies the EQ predicate on the "created_at" field.
+func CreatedAtEQ(v time.Time) predicate.Municipality {
+	return predicate.Municipality(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
+func CreatedAtNEQ(v time.Time) predicate.Municipality {
+	return predicate.Municipality(sql.FieldNEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtIn applies the In predicate on the "created_at" field.
+func CreatedAtIn(vs ...time.Time) predicate.Municipality {
+	return predicate.Municipality(sql.FieldIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
+func CreatedAtNotIn(vs ...time.Time) predicate.Municipality {
+	return predicate.Municipality(sql.FieldNotIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtGT applies the GT predicate on the "created_at" field.
+func CreatedAtGT(v time.Time) predicate.Municipality {
+	return predicate.Municipality(sql.FieldGT(FieldCreatedAt, v))
+}
+
+// CreatedAtGTE applies the GTE predicate on the "created_at" field.
+func CreatedAtGTE(v time.Time) predicate.Municipality {
+	return predicate.Municipality(sql.FieldGTE(FieldCreatedAt, v))
+}
+
+// CreatedAtLT applies the LT predicate on the "created_at" field.
+func CreatedAtLT(v time.Time) predicate.Municipality {
+	return predicate.Municipality(sql.FieldLT(FieldCreatedAt, v))
+}
+
+// CreatedAtLTE applies the LTE predicate on the "created_at" field.
+func CreatedAtLTE(v time.Time) predicate.Municipality {
+	return predicate.Municipality(sql.FieldLTE(FieldCreatedAt, v))
 }
 
 // HasMeshis applies the HasEdge predicate on the "meshis" edge.

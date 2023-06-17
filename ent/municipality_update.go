@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -31,6 +32,20 @@ func (mu *MunicipalityUpdate) Where(ps ...predicate.Municipality) *MunicipalityU
 // SetName sets the "name" field.
 func (mu *MunicipalityUpdate) SetName(s string) *MunicipalityUpdate {
 	mu.mutation.SetName(s)
+	return mu
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (mu *MunicipalityUpdate) SetCreatedAt(t time.Time) *MunicipalityUpdate {
+	mu.mutation.SetCreatedAt(t)
+	return mu
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (mu *MunicipalityUpdate) SetNillableCreatedAt(t *time.Time) *MunicipalityUpdate {
+	if t != nil {
+		mu.SetCreatedAt(*t)
+	}
 	return mu
 }
 
@@ -114,6 +129,9 @@ func (mu *MunicipalityUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := mu.mutation.Name(); ok {
 		_spec.SetField(municipality.FieldName, field.TypeString, value)
 	}
+	if value, ok := mu.mutation.CreatedAt(); ok {
+		_spec.SetField(municipality.FieldCreatedAt, field.TypeTime, value)
+	}
 	if mu.mutation.MeshisCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -182,6 +200,20 @@ type MunicipalityUpdateOne struct {
 // SetName sets the "name" field.
 func (muo *MunicipalityUpdateOne) SetName(s string) *MunicipalityUpdateOne {
 	muo.mutation.SetName(s)
+	return muo
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (muo *MunicipalityUpdateOne) SetCreatedAt(t time.Time) *MunicipalityUpdateOne {
+	muo.mutation.SetCreatedAt(t)
+	return muo
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (muo *MunicipalityUpdateOne) SetNillableCreatedAt(t *time.Time) *MunicipalityUpdateOne {
+	if t != nil {
+		muo.SetCreatedAt(*t)
+	}
 	return muo
 }
 
@@ -294,6 +326,9 @@ func (muo *MunicipalityUpdateOne) sqlSave(ctx context.Context) (_node *Municipal
 	}
 	if value, ok := muo.mutation.Name(); ok {
 		_spec.SetField(municipality.FieldName, field.TypeString, value)
+	}
+	if value, ok := muo.mutation.CreatedAt(); ok {
+		_spec.SetField(municipality.FieldCreatedAt, field.TypeTime, value)
 	}
 	if muo.mutation.MeshisCleared() {
 		edge := &sqlgraph.EdgeSpec{

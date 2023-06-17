@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -25,6 +26,20 @@ type MunicipalityCreate struct {
 // SetName sets the "name" field.
 func (mc *MunicipalityCreate) SetName(s string) *MunicipalityCreate {
 	mc.mutation.SetName(s)
+	return mc
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (mc *MunicipalityCreate) SetCreatedAt(t time.Time) *MunicipalityCreate {
+	mc.mutation.SetCreatedAt(t)
+	return mc
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (mc *MunicipalityCreate) SetNillableCreatedAt(t *time.Time) *MunicipalityCreate {
+	if t != nil {
+		mc.SetCreatedAt(*t)
+	}
 	return mc
 }
 
@@ -50,6 +65,7 @@ func (mc *MunicipalityCreate) Mutation() *MunicipalityMutation {
 
 // Save creates the Municipality in the database.
 func (mc *MunicipalityCreate) Save(ctx context.Context) (*Municipality, error) {
+	mc.defaults()
 	return withHooks(ctx, mc.sqlSave, mc.mutation, mc.hooks)
 }
 
@@ -75,10 +91,21 @@ func (mc *MunicipalityCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (mc *MunicipalityCreate) defaults() {
+	if _, ok := mc.mutation.CreatedAt(); !ok {
+		v := municipality.DefaultCreatedAt()
+		mc.mutation.SetCreatedAt(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (mc *MunicipalityCreate) check() error {
 	if _, ok := mc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Municipality.name"`)}
+	}
+	if _, ok := mc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Municipality.created_at"`)}
 	}
 	return nil
 }
@@ -110,6 +137,10 @@ func (mc *MunicipalityCreate) createSpec() (*Municipality, *sqlgraph.CreateSpec)
 	if value, ok := mc.mutation.Name(); ok {
 		_spec.SetField(municipality.FieldName, field.TypeString, value)
 		_node.Name = value
+	}
+	if value, ok := mc.mutation.CreatedAt(); ok {
+		_spec.SetField(municipality.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
 	}
 	if nodes := mc.mutation.MeshisIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -191,6 +222,18 @@ func (u *MunicipalityUpsert) UpdateName() *MunicipalityUpsert {
 	return u
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (u *MunicipalityUpsert) SetCreatedAt(v time.Time) *MunicipalityUpsert {
+	u.Set(municipality.FieldCreatedAt, v)
+	return u
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *MunicipalityUpsert) UpdateCreatedAt() *MunicipalityUpsert {
+	u.SetExcluded(municipality.FieldCreatedAt)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create.
 // Using this option is equivalent to using:
 //
@@ -245,6 +288,20 @@ func (u *MunicipalityUpsertOne) UpdateName() *MunicipalityUpsertOne {
 	})
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (u *MunicipalityUpsertOne) SetCreatedAt(v time.Time) *MunicipalityUpsertOne {
+	return u.Update(func(s *MunicipalityUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *MunicipalityUpsertOne) UpdateCreatedAt() *MunicipalityUpsertOne {
+	return u.Update(func(s *MunicipalityUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
 // Exec executes the query.
 func (u *MunicipalityUpsertOne) Exec(ctx context.Context) error {
 	if len(u.create.conflict) == 0 {
@@ -293,6 +350,7 @@ func (mcb *MunicipalityCreateBulk) Save(ctx context.Context) ([]*Municipality, e
 	for i := range mcb.builders {
 		func(i int, root context.Context) {
 			builder := mcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*MunicipalityMutation)
 				if !ok {
@@ -455,6 +513,20 @@ func (u *MunicipalityUpsertBulk) SetName(v string) *MunicipalityUpsertBulk {
 func (u *MunicipalityUpsertBulk) UpdateName() *MunicipalityUpsertBulk {
 	return u.Update(func(s *MunicipalityUpsert) {
 		s.UpdateName()
+	})
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *MunicipalityUpsertBulk) SetCreatedAt(v time.Time) *MunicipalityUpsertBulk {
+	return u.Update(func(s *MunicipalityUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *MunicipalityUpsertBulk) UpdateCreatedAt() *MunicipalityUpsertBulk {
+	return u.Update(func(s *MunicipalityUpsert) {
+		s.UpdateCreatedAt()
 	})
 }
 

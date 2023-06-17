@@ -3,6 +3,8 @@
 package meshi
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 )
@@ -24,6 +26,10 @@ const (
 	FieldAddress = "address"
 	// FieldSiteURL holds the string denoting the site_url field in the database.
 	FieldSiteURL = "site_url"
+	// FieldPublishedDate holds the string denoting the published_date field in the database.
+	FieldPublishedDate = "published_date"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
 	// EdgeMunicipality holds the string denoting the municipality edge name in mutations.
 	EdgeMunicipality = "municipality"
 	// Table holds the table name of the meshi in the database.
@@ -46,6 +52,8 @@ var Columns = []string{
 	FieldStoreName,
 	FieldAddress,
 	FieldSiteURL,
+	FieldPublishedDate,
+	FieldCreatedAt,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "meshis"
@@ -80,6 +88,8 @@ var (
 	DefaultAddress string
 	// DefaultSiteURL holds the default value on creation for the "site_url" field.
 	DefaultSiteURL string
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt func() time.Time
 )
 
 // OrderOption defines the ordering options for the Meshi queries.
@@ -118,6 +128,16 @@ func ByAddress(opts ...sql.OrderTermOption) OrderOption {
 // BySiteURL orders the results by the site_url field.
 func BySiteURL(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSiteURL, opts...).ToFunc()
+}
+
+// ByPublishedDate orders the results by the published_date field.
+func ByPublishedDate(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPublishedDate, opts...).ToFunc()
+}
+
+// ByCreatedAt orders the results by the created_at field.
+func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
 }
 
 // ByMunicipalityField orders the results by municipality field.

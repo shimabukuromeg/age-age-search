@@ -3,6 +3,8 @@
 package meshi
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/shimabukuromeg/ageage-search/ent/predicate"
@@ -81,6 +83,16 @@ func Address(v string) predicate.Meshi {
 // SiteURL applies equality check predicate on the "site_url" field. It's identical to SiteURLEQ.
 func SiteURL(v string) predicate.Meshi {
 	return predicate.Meshi(sql.FieldEQ(FieldSiteURL, v))
+}
+
+// PublishedDate applies equality check predicate on the "published_date" field. It's identical to PublishedDateEQ.
+func PublishedDate(v time.Time) predicate.Meshi {
+	return predicate.Meshi(sql.FieldEQ(FieldPublishedDate, v))
+}
+
+// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
+func CreatedAt(v time.Time) predicate.Meshi {
+	return predicate.Meshi(sql.FieldEQ(FieldCreatedAt, v))
 }
 
 // ArticleIDEQ applies the EQ predicate on the "article_id" field.
@@ -471,6 +483,96 @@ func SiteURLEqualFold(v string) predicate.Meshi {
 // SiteURLContainsFold applies the ContainsFold predicate on the "site_url" field.
 func SiteURLContainsFold(v string) predicate.Meshi {
 	return predicate.Meshi(sql.FieldContainsFold(FieldSiteURL, v))
+}
+
+// PublishedDateEQ applies the EQ predicate on the "published_date" field.
+func PublishedDateEQ(v time.Time) predicate.Meshi {
+	return predicate.Meshi(sql.FieldEQ(FieldPublishedDate, v))
+}
+
+// PublishedDateNEQ applies the NEQ predicate on the "published_date" field.
+func PublishedDateNEQ(v time.Time) predicate.Meshi {
+	return predicate.Meshi(sql.FieldNEQ(FieldPublishedDate, v))
+}
+
+// PublishedDateIn applies the In predicate on the "published_date" field.
+func PublishedDateIn(vs ...time.Time) predicate.Meshi {
+	return predicate.Meshi(sql.FieldIn(FieldPublishedDate, vs...))
+}
+
+// PublishedDateNotIn applies the NotIn predicate on the "published_date" field.
+func PublishedDateNotIn(vs ...time.Time) predicate.Meshi {
+	return predicate.Meshi(sql.FieldNotIn(FieldPublishedDate, vs...))
+}
+
+// PublishedDateGT applies the GT predicate on the "published_date" field.
+func PublishedDateGT(v time.Time) predicate.Meshi {
+	return predicate.Meshi(sql.FieldGT(FieldPublishedDate, v))
+}
+
+// PublishedDateGTE applies the GTE predicate on the "published_date" field.
+func PublishedDateGTE(v time.Time) predicate.Meshi {
+	return predicate.Meshi(sql.FieldGTE(FieldPublishedDate, v))
+}
+
+// PublishedDateLT applies the LT predicate on the "published_date" field.
+func PublishedDateLT(v time.Time) predicate.Meshi {
+	return predicate.Meshi(sql.FieldLT(FieldPublishedDate, v))
+}
+
+// PublishedDateLTE applies the LTE predicate on the "published_date" field.
+func PublishedDateLTE(v time.Time) predicate.Meshi {
+	return predicate.Meshi(sql.FieldLTE(FieldPublishedDate, v))
+}
+
+// PublishedDateIsNil applies the IsNil predicate on the "published_date" field.
+func PublishedDateIsNil() predicate.Meshi {
+	return predicate.Meshi(sql.FieldIsNull(FieldPublishedDate))
+}
+
+// PublishedDateNotNil applies the NotNil predicate on the "published_date" field.
+func PublishedDateNotNil() predicate.Meshi {
+	return predicate.Meshi(sql.FieldNotNull(FieldPublishedDate))
+}
+
+// CreatedAtEQ applies the EQ predicate on the "created_at" field.
+func CreatedAtEQ(v time.Time) predicate.Meshi {
+	return predicate.Meshi(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
+func CreatedAtNEQ(v time.Time) predicate.Meshi {
+	return predicate.Meshi(sql.FieldNEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtIn applies the In predicate on the "created_at" field.
+func CreatedAtIn(vs ...time.Time) predicate.Meshi {
+	return predicate.Meshi(sql.FieldIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
+func CreatedAtNotIn(vs ...time.Time) predicate.Meshi {
+	return predicate.Meshi(sql.FieldNotIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtGT applies the GT predicate on the "created_at" field.
+func CreatedAtGT(v time.Time) predicate.Meshi {
+	return predicate.Meshi(sql.FieldGT(FieldCreatedAt, v))
+}
+
+// CreatedAtGTE applies the GTE predicate on the "created_at" field.
+func CreatedAtGTE(v time.Time) predicate.Meshi {
+	return predicate.Meshi(sql.FieldGTE(FieldCreatedAt, v))
+}
+
+// CreatedAtLT applies the LT predicate on the "created_at" field.
+func CreatedAtLT(v time.Time) predicate.Meshi {
+	return predicate.Meshi(sql.FieldLT(FieldCreatedAt, v))
+}
+
+// CreatedAtLTE applies the LTE predicate on the "created_at" field.
+func CreatedAtLTE(v time.Time) predicate.Meshi {
+	return predicate.Meshi(sql.FieldLTE(FieldCreatedAt, v))
 }
 
 // HasMunicipality applies the HasEdge predicate on the "municipality" edge.

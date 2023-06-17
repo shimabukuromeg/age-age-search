@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
@@ -26,6 +28,11 @@ func (Meshi) Fields() []ent.Field {
 			Default("unknown"),
 		field.String("site_url").
 			Default("unknown"),
+		field.Time("published_date").
+			Optional().
+			Nillable(),
+		field.Time("created_at").
+			Default(time.Now),
 	}
 }
 

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -40,6 +41,8 @@ type MeshiMutation struct {
 	store_name          *string
 	address             *string
 	site_url            *string
+	published_date      *time.Time
+	created_at          *time.Time
 	clearedFields       map[string]struct{}
 	municipality        *int
 	clearedmunicipality bool
@@ -362,6 +365,91 @@ func (m *MeshiMutation) ResetSiteURL() {
 	m.site_url = nil
 }
 
+// SetPublishedDate sets the "published_date" field.
+func (m *MeshiMutation) SetPublishedDate(t time.Time) {
+	m.published_date = &t
+}
+
+// PublishedDate returns the value of the "published_date" field in the mutation.
+func (m *MeshiMutation) PublishedDate() (r time.Time, exists bool) {
+	v := m.published_date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPublishedDate returns the old "published_date" field's value of the Meshi entity.
+// If the Meshi object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MeshiMutation) OldPublishedDate(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPublishedDate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPublishedDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPublishedDate: %w", err)
+	}
+	return oldValue.PublishedDate, nil
+}
+
+// ClearPublishedDate clears the value of the "published_date" field.
+func (m *MeshiMutation) ClearPublishedDate() {
+	m.published_date = nil
+	m.clearedFields[meshi.FieldPublishedDate] = struct{}{}
+}
+
+// PublishedDateCleared returns if the "published_date" field was cleared in this mutation.
+func (m *MeshiMutation) PublishedDateCleared() bool {
+	_, ok := m.clearedFields[meshi.FieldPublishedDate]
+	return ok
+}
+
+// ResetPublishedDate resets all changes to the "published_date" field.
+func (m *MeshiMutation) ResetPublishedDate() {
+	m.published_date = nil
+	delete(m.clearedFields, meshi.FieldPublishedDate)
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *MeshiMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *MeshiMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Meshi entity.
+// If the Meshi object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MeshiMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *MeshiMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
 // SetMunicipalityID sets the "municipality" edge to the Municipality entity by id.
 func (m *MeshiMutation) SetMunicipalityID(id int) {
 	m.municipality = &id
@@ -435,7 +523,7 @@ func (m *MeshiMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *MeshiMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 8)
 	if m.article_id != nil {
 		fields = append(fields, meshi.FieldArticleID)
 	}
@@ -453,6 +541,12 @@ func (m *MeshiMutation) Fields() []string {
 	}
 	if m.site_url != nil {
 		fields = append(fields, meshi.FieldSiteURL)
+	}
+	if m.published_date != nil {
+		fields = append(fields, meshi.FieldPublishedDate)
+	}
+	if m.created_at != nil {
+		fields = append(fields, meshi.FieldCreatedAt)
 	}
 	return fields
 }
@@ -474,6 +568,10 @@ func (m *MeshiMutation) Field(name string) (ent.Value, bool) {
 		return m.Address()
 	case meshi.FieldSiteURL:
 		return m.SiteURL()
+	case meshi.FieldPublishedDate:
+		return m.PublishedDate()
+	case meshi.FieldCreatedAt:
+		return m.CreatedAt()
 	}
 	return nil, false
 }
@@ -495,6 +593,10 @@ func (m *MeshiMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldAddress(ctx)
 	case meshi.FieldSiteURL:
 		return m.OldSiteURL(ctx)
+	case meshi.FieldPublishedDate:
+		return m.OldPublishedDate(ctx)
+	case meshi.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Meshi field %s", name)
 }
@@ -546,6 +648,20 @@ func (m *MeshiMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetSiteURL(v)
 		return nil
+	case meshi.FieldPublishedDate:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPublishedDate(v)
+		return nil
+	case meshi.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Meshi field %s", name)
 }
@@ -575,7 +691,11 @@ func (m *MeshiMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *MeshiMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(meshi.FieldPublishedDate) {
+		fields = append(fields, meshi.FieldPublishedDate)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -588,6 +708,11 @@ func (m *MeshiMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *MeshiMutation) ClearField(name string) error {
+	switch name {
+	case meshi.FieldPublishedDate:
+		m.ClearPublishedDate()
+		return nil
+	}
 	return fmt.Errorf("unknown Meshi nullable field %s", name)
 }
 
@@ -612,6 +737,12 @@ func (m *MeshiMutation) ResetField(name string) error {
 		return nil
 	case meshi.FieldSiteURL:
 		m.ResetSiteURL()
+		return nil
+	case meshi.FieldPublishedDate:
+		m.ResetPublishedDate()
+		return nil
+	case meshi.FieldCreatedAt:
+		m.ResetCreatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Meshi field %s", name)
@@ -698,6 +829,7 @@ type MunicipalityMutation struct {
 	typ           string
 	id            *int
 	name          *string
+	created_at    *time.Time
 	clearedFields map[string]struct{}
 	meshis        map[int]struct{}
 	removedmeshis map[int]struct{}
@@ -841,6 +973,42 @@ func (m *MunicipalityMutation) ResetName() {
 	m.name = nil
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (m *MunicipalityMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *MunicipalityMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Municipality entity.
+// If the Municipality object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MunicipalityMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *MunicipalityMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
 // AddMeshiIDs adds the "meshis" edge to the Meshi entity by ids.
 func (m *MunicipalityMutation) AddMeshiIDs(ids ...int) {
 	if m.meshis == nil {
@@ -929,9 +1097,12 @@ func (m *MunicipalityMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *MunicipalityMutation) Fields() []string {
-	fields := make([]string, 0, 1)
+	fields := make([]string, 0, 2)
 	if m.name != nil {
 		fields = append(fields, municipality.FieldName)
+	}
+	if m.created_at != nil {
+		fields = append(fields, municipality.FieldCreatedAt)
 	}
 	return fields
 }
@@ -943,6 +1114,8 @@ func (m *MunicipalityMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case municipality.FieldName:
 		return m.Name()
+	case municipality.FieldCreatedAt:
+		return m.CreatedAt()
 	}
 	return nil, false
 }
@@ -954,6 +1127,8 @@ func (m *MunicipalityMutation) OldField(ctx context.Context, name string) (ent.V
 	switch name {
 	case municipality.FieldName:
 		return m.OldName(ctx)
+	case municipality.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Municipality field %s", name)
 }
@@ -969,6 +1144,13 @@ func (m *MunicipalityMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetName(v)
+		return nil
+	case municipality.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Municipality field %s", name)
@@ -1021,6 +1203,9 @@ func (m *MunicipalityMutation) ResetField(name string) error {
 	switch name {
 	case municipality.FieldName:
 		m.ResetName()
+		return nil
+	case municipality.FieldCreatedAt:
+		m.ResetCreatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Municipality field %s", name)

@@ -17,6 +17,8 @@ var (
 		{Name: "store_name", Type: field.TypeString, Default: "unknown"},
 		{Name: "address", Type: field.TypeString, Default: "unknown"},
 		{Name: "site_url", Type: field.TypeString, Default: "unknown"},
+		{Name: "published_date", Type: field.TypeTime, Nullable: true},
+		{Name: "created_at", Type: field.TypeTime},
 		{Name: "municipality_meshis", Type: field.TypeInt, Nullable: true},
 	}
 	// MeshisTable holds the schema information for the "meshis" table.
@@ -27,7 +29,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "meshis_municipalities_meshis",
-				Columns:    []*schema.Column{MeshisColumns[7]},
+				Columns:    []*schema.Column{MeshisColumns[9]},
 				RefColumns: []*schema.Column{MunicipalitiesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -37,6 +39,7 @@ var (
 	MunicipalitiesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "created_at", Type: field.TypeTime},
 	}
 	// MunicipalitiesTable holds the schema information for the "municipalities" table.
 	MunicipalitiesTable = &schema.Table{
