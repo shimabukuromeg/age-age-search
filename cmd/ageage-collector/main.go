@@ -131,7 +131,39 @@ func GetMunicipality(address string) (string, error) {
 	return "", fmt.Errorf("unable to find municipality in: %s", address)
 }
 
-func CreateMeshi(ctx context.Context, client *ent.Client, article *Article) (*ent.Meshi, error) {
+func CreateMunicipality(ctx context.Context, client *ent.Client, article *Article) (*ent.Municipality, error) {
+	name, err := GetMunicipality(article.Address)
+	if err != nil {
+		return nil, fmt.Errorf("failed getting municipalityName: %w", err)
+	}
+	id, err := client.Municipality.
+		Create().
+		SetName(name).
+		OnConflictColumns("name").
+		UpdateNewValues().
+		ID(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed creating municipality: %w", err)
+	}
+
+	createdMunicipality, err := client.Municipality.
+		Query().
+		Where(municipality.IDEQ(id)).
+		Only(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed querying the municipality: %w", err)
+	}
+
+	return createdMunicipality, nil
+}
+
+func CreateMeshiAndMunicipality(ctx context.Context, client *ent.Client, article *Article) (*ent.Meshi, error) {
+
+	municipality, err := CreateMunicipality(context.Background(), client, article)
+	if err != nil {
+		log.Println("fail crate municipality: %w", err)
+	}
+
 	layout := "2006/01/02"
 	parsedTime, err := time.Parse(layout, article.PublishedDate)
 	if err != nil {
@@ -163,33 +195,16 @@ func CreateMeshi(ctx context.Context, client *ent.Client, article *Article) (*en
 		return nil, fmt.Errorf("failed querying the meshi: %w", err)
 	}
 
+	// Link the meshi to the municipality
+	err = client.Meshi.
+		UpdateOneID(createdMeshi.ID).
+		SetMunicipalityID(municipality.ID).
+		Exec(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed linking the meshi to the municipality: %w", err)
+	}
+
 	return createdMeshi, nil
-}
-
-func CreateMunicipality(ctx context.Context, client *ent.Client, article *Article) (*ent.Municipality, error) {
-	name, err := GetMunicipality(article.Address)
-	if err != nil {
-		return nil, fmt.Errorf("failed getting municipalityName: %w", err)
-	}
-	id, err := client.Municipality.
-		Create().
-		SetName(name).
-		OnConflictColumns("name").
-		UpdateNewValues().
-		ID(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed creating municipality: %w", err)
-	}
-
-	createdMunicipality, err := client.Municipality.
-		Query().
-		Where(municipality.IDEQ(id)).
-		Only(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed querying the municipality: %w", err)
-	}
-
-	return createdMunicipality, nil
 }
 
 func main() {
@@ -200,6 +215,7 @@ func main() {
 	}
 	defer client.Close()
 
+	cxt := context.Background()
 	baseURL := "https://www.otv.co.jp/okitive/collaborator/ageage/page/%d"
 	page := 1
 	for {
@@ -215,24 +231,20 @@ func main() {
 		for _, article := range articles {
 			fmt.Println(article)
 
-			meshi, err := CreateMeshi(context.Background(), client, &article)
+			_, err := client.Meshi.
+				Query().
+				Where(meshi.ArticleIDEQ(article.ArticleID)).
+				Only(cxt)
 			if err != nil {
-				log.Println("fail crate meshi: %w", err)
-				continue
-			}
-
-			municipality, err := CreateMunicipality(context.Background(), client, &article)
-			if err != nil {
-				log.Println("fail crate municipality: %w", err)
-				continue
-			}
-
-			_, err = municipality.Update().
-				AddMeshis(meshi).
-				Save(context.Background())
-			if err != nil {
-				log.Println("fail update municipality: %w", err)
-				continue
+				if ent.IsNotFound(err) {
+					fmt.Println("No Meshi found with this articleID.")
+					// Create a new Meshi and link it to the Municipality.
+					_, err := CreateMeshiAndMunicipality(cxt, client, &article)
+					if err != nil {
+						log.Println("fail crate meshi: %w", err)
+						continue
+					}
+				}
 			}
 
 			time.Sleep(time.Second * 1)
