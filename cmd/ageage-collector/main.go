@@ -1,7 +1,7 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -10,27 +10,25 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/shimabukuromeg/ageage-search/ent"
+	"github.com/shimabukuromeg/ageage-search/ent/meshi"
+	"github.com/shimabukuromeg/ageage-search/ent/municipality"
 
 	_ "github.com/lib/pq"
 	_ "github.com/mattn/go-sqlite3"
 )
 
-type Meshi struct {
-	ArticleID string
-	Title     string
-	ImageURL  string
-	StoreName string
-	Address   string
-	SiteURL   string
+type Article struct {
+	ArticleID      string
+	Title          string
+	ImageURL       string
+	StoreName      string
+	Address        string
+	SiteURL        string
 	MunicipalityID int
 }
 
-type Municipality struct {
-	ID   int
-	Name string
-}
-
-func findStoreAndAddress(siteURL string) (string, string, error) {
+func FindStoreAndAddress(siteURL string) (string, string, error) {
 	// goqueryでURLからDOMオブジェクトを取得する
 	doc, err := goquery.NewDocument(siteURL)
 	if err != nil {
@@ -50,14 +48,14 @@ func findStoreAndAddress(siteURL string) (string, string, error) {
 	return storeName, address, nil
 }
 
-func findMeshis(siteURL string) ([]Meshi, error) {
+func FindArticles(siteURL string) ([]Article, error) {
 	// goqueryでURLからDOMオブジェクトを取得する
 	doc, err := goquery.NewDocument(siteURL)
 	if err != nil {
 		return nil, err
 	}
 	pat := regexp.MustCompile(`.*/okitive/article/([0-9]+)/$`)
-	meshis := []Meshi{}
+	articles := []Article{}
 
 	doc.Find("ul li article a").Each(func(n int, elem *goquery.Selection) {
 		token := pat.FindStringSubmatch(elem.AttrOr("href", ""))
@@ -67,13 +65,13 @@ func findMeshis(siteURL string) ([]Meshi, error) {
 		title := elem.Find("p").Text()
 		imageURL := elem.Find("img").AttrOr("src", "")
 		siteURL := elem.AttrOr("href", "")
-		storeName, address, err := findStoreAndAddress(siteURL)
+		storeName, address, err := FindStoreAndAddress(siteURL)
 
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		meshis = append(meshis, Meshi{
+		articles = append(articles, Article{
 			ArticleID: token[1],
 			Title:     title,
 			ImageURL:  imageURL,
@@ -83,7 +81,7 @@ func findMeshis(siteURL string) ([]Meshi, error) {
 		})
 	})
 
-	return meshis, nil
+	return articles, nil
 }
 
 var dbType string
@@ -92,7 +90,7 @@ var target string
 
 func init() {
 	flag.StringVar(&dbType, "t", "sqlite3", "Type of DB (sqlite or postgres)")
-	flag.StringVar(&dsn, "d", "database.sqlite", "Database Data Source Name")
+	flag.StringVar(&dsn, "d", "file:database.sqlite?_fk=1", "Database Data Source Name")
 	flag.StringVar(&target, "target", "first", "target page (all or first)")
 	flag.Parse()
 
@@ -106,72 +104,22 @@ func init() {
 	}
 }
 
-func setupDB(dbType, dsn string) (*sql.DB, error) {
-	var db *sql.DB
-	var err error
-	var queries []string
-
-	switch dbType {
-	case "sqlite3":
-		db, err = sql.Open("sqlite3", dsn)
-		if err != nil {
-			return nil, err
-		}
-
-		queries = []string{
-			`CREATE TABLE IF NOT EXISTS municipalities(
-				id INTEGER PRIMARY KEY,
-				name TEXT NOT NULL UNIQUE
-			)`,
-			`CREATE TABLE IF NOT EXISTS meshis(
-				id INTEGER PRIMARY KEY,
-				article_id TEXT NOT NULL UNIQUE,
-				title TEXT,
-				image_url TEXT,
-				store_name TEXT,
-				address TEXT,
-				site_url TEXT,
-				municipality_id INTEGER,
-				FOREIGN KEY(municipality_id) REFERENCES municipalities(id)
-			)`,
-		}
-	case "postgres":
-		db, err = sql.Open("postgres", dsn)
-		if err != nil {
-			return nil, err
-		}
-
-		queries = []string{
-			`CREATE TABLE IF NOT EXISTS municipalities(
-				id SERIAL PRIMARY KEY,
-				name TEXT NOT NULL UNIQUE
-			)`,
-			`CREATE TABLE IF NOT EXISTS meshis(
-				id SERIAL PRIMARY KEY,
-				article_id TEXT NOT NULL UNIQUE,
-				title TEXT,
-				image_url TEXT,
-				store_name TEXT,
-				address TEXT,
-				site_url TEXT,
-				municipality_id INTEGER,
-				FOREIGN KEY(municipality_id) REFERENCES municipalities(id)
-			)`,
-		}
-	default:
-		return nil, fmt.Errorf("Unknown database type: %s", dbType)
+func SetupDB(dbType, dsn string) (*ent.Client, error) {
+	client, err := ent.Open(dbType, dsn)
+	if err != nil {
+		return nil, err
+	}
+	if dbType != "sqlite3" && dbType != "postgres" {
+		return nil, fmt.Errorf("invalid dbType: %s", dbType)
+	}
+	if err := client.Schema.Create(context.Background()); err != nil {
+		log.Fatalf("failed creating schema resources: %v", err)
 	}
 
-	for _, query := range queries {
-		_, err = db.Exec(query)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return db, nil
+	return client, nil
 }
 
-func getMunicipality(address string) (string, error) {
+func GetMunicipality(address string) (string, error) {
 	r := regexp.MustCompile(`沖縄県([^市町村]*?[市町村])`)
 	match := r.FindStringSubmatch(address)
 	if len(match) > 1 {
@@ -180,129 +128,110 @@ func getMunicipality(address string) (string, error) {
 	return "", fmt.Errorf("unable to find municipality in: %s", address)
 }
 
-func addMeshi(db *sql.DB, meshi *Meshi) error {
-	municipality, err := getMunicipality(meshi.Address)
+func CreateMeshi(ctx context.Context, client *ent.Client, m *Article) (*ent.Meshi, error) {
+	id, err := client.Meshi.
+		Create().
+		SetArticleID(m.ArticleID).
+		SetTitle(m.Title).
+		SetImageURL(m.ImageURL).
+		SetStoreName(m.StoreName).
+		SetAddress(m.Address).
+		SetSiteURL(m.SiteURL).
+		OnConflictColumns("article_id").
+		UpdateNewValues().
+		ID(ctx)
 	if err != nil {
-		return err
-	}
-	var municipalityID int
-	switch dbType {
-	case "sqlite3":
-		err = db.QueryRow("SELECT id FROM municipalities WHERE name = ?", municipality).Scan(&municipalityID)
-		if err == sql.ErrNoRows {
-			// If the municipality doesn't exist, insert it and get its ID
-			res, err := db.Exec("INSERT INTO municipalities(name) VALUES(?)", municipality)
-			if err != nil {
-				return err
-			}
-			lastID, err := res.LastInsertId()
-			if err != nil {
-				return err
-			}
-			municipalityID = int(lastID)
-		} else if err != nil {
-			// If another error occurred, return it
-			return err
-		}
-
-		_, err = db.Exec(`
-	        REPLACE INTO meshis(article_id, title, image_url, store_name, address, site_url, municipality_id) VALUES(?, ?, ?, ?, ?, ?, ?)
-	    `,
-			meshi.ArticleID,
-			meshi.Title,
-			meshi.ImageURL,
-			meshi.StoreName,
-			meshi.Address,
-			meshi.SiteURL,
-			municipalityID,
-		)
-		if err != nil {
-			return err
-		}
-
-	case "postgres":
-		err = db.QueryRow("SELECT id FROM municipalities WHERE name = $1", municipality).Scan(&municipalityID)
-		if err == sql.ErrNoRows {
-			// If the municipality doesn't exist, insert it and get its ID
-			err = db.QueryRow("INSERT INTO municipalities(name) VALUES($1) RETURNING id", municipality).Scan(&municipalityID)
-			if err != nil {
-				return err
-			}
-		} else if err != nil {
-			// If another error occurred, return it
-			return err
-		}
-
-		// PostgreSQL does not support the REPLACE statement, so we use an INSERT statement with the ON CONFLICT DO UPDATE clause.
-		_, err = db.Exec(`
-	        INSERT INTO meshis(article_id, title, image_url, store_name, address, site_url, municipality_id) VALUES($1, $2, $3, $4, $5, $6, $7)
-	        ON CONFLICT (article_id) DO UPDATE SET title = excluded.title, image_url = excluded.image_url, store_name = excluded.store_name, address = excluded.address, site_url = excluded.site_url, municipality_id = excluded.municipality_id
-	    `,
-			meshi.ArticleID,
-			meshi.Title,
-			meshi.ImageURL,
-			meshi.StoreName,
-			meshi.Address,
-			meshi.SiteURL,
-			municipalityID,
-		)
-		if err != nil {
-			return err
-		}
-
-	default:
-		return fmt.Errorf("Unknown database type: %s", dbType)
+		return nil, fmt.Errorf("failed creating meshi: %w", err)
 	}
 
-	return nil
+	createdMeshi, err := client.Meshi.
+		Query().
+		Where(meshi.IDEQ(id)).
+		Only(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed querying the meshi: %w", err)
+	}
+
+	return createdMeshi, nil
+}
+
+func CreateMunicipality(ctx context.Context, client *ent.Client, m *Article) (*ent.Municipality, error) {
+	name, err := GetMunicipality(m.Address)
+	if err != nil {
+		return nil, fmt.Errorf("failed getting municipalityName: %w", err)
+	}
+	id, err := client.Municipality.
+		Create().
+		SetName(name).
+		OnConflictColumns("name").
+		UpdateNewValues().
+		ID(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed creating municipality: %w", err)
+	}
+
+	createdMunicipality, err := client.Municipality.
+		Query().
+		Where(municipality.IDEQ(id)).
+		Only(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed querying the municipality: %w", err)
+	}
+
+	return createdMunicipality, nil
 }
 
 func main() {
 	flag.Parse()
-
-	var db *sql.DB
-	var err error
-
-	if dbType == "sqlite3" || dbType == "postgres" {
-		db, err = setupDB(dbType, dsn)
-	} else {
-		log.Fatalf("Unsupported DB type '%s'. Only 'sqlite' and 'postgres' are supported.", dbType)
-	}
-
+	client, err := SetupDB(dbType, dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
+	defer client.Close()
 
 	baseURL := "https://www.otv.co.jp/okitive/collaborator/ageage/page/%d"
 	page := 1
 	for {
 		listURL := fmt.Sprintf(baseURL, page)
-		meshis, err := findMeshis(listURL)
+		articles, err := FindArticles(listURL)
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Printf("found %d meshis", len(meshis))
-		if len(meshis) == 0 {
+		log.Printf("found %d articles", len(articles))
+		if len(articles) == 0 {
 			break
 		}
-		for _, Meshi := range meshis {
-			fmt.Println(Meshi.ArticleID)
-			fmt.Println(Meshi.Title)
-			fmt.Println(Meshi.ImageURL)
-			fmt.Println(Meshi.StoreName)
-			fmt.Println(Meshi.Address)
-			fmt.Println(Meshi.SiteURL)
+		for _, article := range articles {
+			// fmt.Println(Meshi.ArticleID)
+			// fmt.Println(Meshi.Title)
+			// fmt.Println(Meshi.ImageURL)
+			// fmt.Println(Meshi.StoreName)
+			// fmt.Println(Meshi.Address)
+			// fmt.Println(Meshi.SiteURL)
 
-			err = addMeshi(db, &Meshi)
+			meshi, err := CreateMeshi(context.Background(), client, &article)
 			if err != nil {
-				log.Println(err)
+				log.Println("fail crate meshi: %w", err)
+				continue
+			}
+
+			municipality, err := CreateMunicipality(context.Background(), client, &article)
+			if err != nil {
+				log.Println("fail crate municipality: %w", err)
+				continue
+			}
+
+			_, err = municipality.Update().
+				AddMeshis(meshi).
+				Save(context.Background())
+			if err != nil {
+				log.Println("fail update municipality: %w", err)
 				continue
 			}
 
 			time.Sleep(time.Second * 1)
 		}
-		if (target == "first") {
+		if target == "first" {
 			break
 		}
 		page++
