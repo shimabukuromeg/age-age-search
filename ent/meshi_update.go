@@ -111,17 +111,29 @@ func (mu *MeshiUpdate) SetPublishedDate(t time.Time) *MeshiUpdate {
 	return mu
 }
 
-// SetNillablePublishedDate sets the "published_date" field if the given value is not nil.
-func (mu *MeshiUpdate) SetNillablePublishedDate(t *time.Time) *MeshiUpdate {
-	if t != nil {
-		mu.SetPublishedDate(*t)
-	}
+// SetLatitude sets the "latitude" field.
+func (mu *MeshiUpdate) SetLatitude(f float64) *MeshiUpdate {
+	mu.mutation.ResetLatitude()
+	mu.mutation.SetLatitude(f)
 	return mu
 }
 
-// ClearPublishedDate clears the value of the "published_date" field.
-func (mu *MeshiUpdate) ClearPublishedDate() *MeshiUpdate {
-	mu.mutation.ClearPublishedDate()
+// AddLatitude adds f to the "latitude" field.
+func (mu *MeshiUpdate) AddLatitude(f float64) *MeshiUpdate {
+	mu.mutation.AddLatitude(f)
+	return mu
+}
+
+// SetLongitude sets the "longitude" field.
+func (mu *MeshiUpdate) SetLongitude(f float64) *MeshiUpdate {
+	mu.mutation.ResetLongitude()
+	mu.mutation.SetLongitude(f)
+	return mu
+}
+
+// AddLongitude adds f to the "longitude" field.
+func (mu *MeshiUpdate) AddLongitude(f float64) *MeshiUpdate {
+	mu.mutation.AddLongitude(f)
 	return mu
 }
 
@@ -226,8 +238,17 @@ func (mu *MeshiUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := mu.mutation.PublishedDate(); ok {
 		_spec.SetField(meshi.FieldPublishedDate, field.TypeTime, value)
 	}
-	if mu.mutation.PublishedDateCleared() {
-		_spec.ClearField(meshi.FieldPublishedDate, field.TypeTime)
+	if value, ok := mu.mutation.Latitude(); ok {
+		_spec.SetField(meshi.FieldLatitude, field.TypeFloat64, value)
+	}
+	if value, ok := mu.mutation.AddedLatitude(); ok {
+		_spec.AddField(meshi.FieldLatitude, field.TypeFloat64, value)
+	}
+	if value, ok := mu.mutation.Longitude(); ok {
+		_spec.SetField(meshi.FieldLongitude, field.TypeFloat64, value)
+	}
+	if value, ok := mu.mutation.AddedLongitude(); ok {
+		_spec.AddField(meshi.FieldLongitude, field.TypeFloat64, value)
 	}
 	if value, ok := mu.mutation.CreatedAt(); ok {
 		_spec.SetField(meshi.FieldCreatedAt, field.TypeTime, value)
@@ -363,17 +384,29 @@ func (muo *MeshiUpdateOne) SetPublishedDate(t time.Time) *MeshiUpdateOne {
 	return muo
 }
 
-// SetNillablePublishedDate sets the "published_date" field if the given value is not nil.
-func (muo *MeshiUpdateOne) SetNillablePublishedDate(t *time.Time) *MeshiUpdateOne {
-	if t != nil {
-		muo.SetPublishedDate(*t)
-	}
+// SetLatitude sets the "latitude" field.
+func (muo *MeshiUpdateOne) SetLatitude(f float64) *MeshiUpdateOne {
+	muo.mutation.ResetLatitude()
+	muo.mutation.SetLatitude(f)
 	return muo
 }
 
-// ClearPublishedDate clears the value of the "published_date" field.
-func (muo *MeshiUpdateOne) ClearPublishedDate() *MeshiUpdateOne {
-	muo.mutation.ClearPublishedDate()
+// AddLatitude adds f to the "latitude" field.
+func (muo *MeshiUpdateOne) AddLatitude(f float64) *MeshiUpdateOne {
+	muo.mutation.AddLatitude(f)
+	return muo
+}
+
+// SetLongitude sets the "longitude" field.
+func (muo *MeshiUpdateOne) SetLongitude(f float64) *MeshiUpdateOne {
+	muo.mutation.ResetLongitude()
+	muo.mutation.SetLongitude(f)
+	return muo
+}
+
+// AddLongitude adds f to the "longitude" field.
+func (muo *MeshiUpdateOne) AddLongitude(f float64) *MeshiUpdateOne {
+	muo.mutation.AddLongitude(f)
 	return muo
 }
 
@@ -508,8 +541,17 @@ func (muo *MeshiUpdateOne) sqlSave(ctx context.Context) (_node *Meshi, err error
 	if value, ok := muo.mutation.PublishedDate(); ok {
 		_spec.SetField(meshi.FieldPublishedDate, field.TypeTime, value)
 	}
-	if muo.mutation.PublishedDateCleared() {
-		_spec.ClearField(meshi.FieldPublishedDate, field.TypeTime)
+	if value, ok := muo.mutation.Latitude(); ok {
+		_spec.SetField(meshi.FieldLatitude, field.TypeFloat64, value)
+	}
+	if value, ok := muo.mutation.AddedLatitude(); ok {
+		_spec.AddField(meshi.FieldLatitude, field.TypeFloat64, value)
+	}
+	if value, ok := muo.mutation.Longitude(); ok {
+		_spec.SetField(meshi.FieldLongitude, field.TypeFloat64, value)
+	}
+	if value, ok := muo.mutation.AddedLongitude(); ok {
+		_spec.AddField(meshi.FieldLongitude, field.TypeFloat64, value)
 	}
 	if value, ok := muo.mutation.CreatedAt(); ok {
 		_spec.SetField(meshi.FieldCreatedAt, field.TypeTime, value)

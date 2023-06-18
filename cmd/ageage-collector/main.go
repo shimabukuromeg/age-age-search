@@ -2,11 +2,16 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
+	"net/url"
 	"os"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -27,6 +32,23 @@ type Article struct {
 	SiteURL        string
 	PublishedDate  string
 	MunicipalityID int
+}
+
+type GeoCodeResponse struct {
+	Geometry struct {
+		Coordinates []float64 `json:"coordinates"`
+		Type        string    `json:"type"`
+	} `json:"geometry"`
+	Type       string `json:"type"`
+	Properties struct {
+		AddressCode string `json:"addressCode"`
+		Title       string `json:"title"`
+	} `json:"properties"`
+}
+
+type Location struct {
+	Latitude  float64
+	Longitude float64
 }
 
 func FindStoreAndAddress(siteURL string) (string, string, error) {
@@ -159,6 +181,15 @@ func CreateMunicipality(ctx context.Context, client *ent.Client, article *Articl
 
 func CreateMeshiAndMunicipality(ctx context.Context, client *ent.Client, article *Article) (*ent.Meshi, error) {
 
+	// article.Address には〒901-0242　沖縄県豊見城市高安576-1 が入っているので住所だけし抽出する
+	newAddress := strings.Replace(article.Address, "　", " ", -1)
+	address := strings.Split(newAddress, " ")[1]
+	location, err := GetLatLng(address)
+	if err != nil {
+		return nil, fmt.Errorf("fail get latlng: %w", err)
+	}
+	fmt.Println(location)
+
 	municipality, err := CreateMunicipality(context.Background(), client, article)
 	if err != nil {
 		log.Println("fail crate municipality: %w", err)
@@ -180,6 +211,8 @@ func CreateMeshiAndMunicipality(ctx context.Context, client *ent.Client, article
 		SetAddress(article.Address).
 		SetSiteURL(article.SiteURL).
 		SetPublishedDate(parsedTime).
+		SetLatitude(location.Latitude).
+		SetLongitude(location.Longitude).
 		OnConflictColumns("article_id").
 		UpdateNewValues().
 		ID(ctx)
@@ -207,6 +240,39 @@ func CreateMeshiAndMunicipality(ctx context.Context, client *ent.Client, article
 	return createdMeshi, nil
 }
 
+func GetLatLng(address string) (Location, error) {
+	baseUrl := "https://msearch.gsi.go.jp/address-search/AddressSearch"
+
+	params := url.Values{}
+	params.Add("q", address)
+
+	resp, err := http.Get(baseUrl + "?" + params.Encode())
+	if err != nil {
+		return Location{}, fmt.Errorf("failed AddressSearch request : %v", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return Location{}, fmt.Errorf("fail ioutil.ReadAll : %v", err)
+	}
+
+	var data []GeoCodeResponse
+	if err := json.Unmarshal(body, &data); err != nil {
+		return Location{}, fmt.Errorf("fail Unmarshal : %v", err)
+	}
+
+	if len(data) == 0 {
+		return Location{}, fmt.Errorf("no result found for address: %s", address)
+	}
+
+	latLng := Location{
+		Latitude:  data[0].Geometry.Coordinates[1],
+		Longitude: data[0].Geometry.Coordinates[0],
+	}
+	return latLng, nil
+}
+
 func main() {
 	flag.Parse()
 	client, err := SetupDB(dbType, dsn)
@@ -230,7 +296,6 @@ func main() {
 		}
 		for _, article := range articles {
 			fmt.Println(article)
-
 			_, err := client.Meshi.
 				Query().
 				Where(meshi.ArticleIDEQ(article.ArticleID)).

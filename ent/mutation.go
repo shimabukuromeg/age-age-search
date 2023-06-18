@@ -42,6 +42,10 @@ type MeshiMutation struct {
 	address             *string
 	site_url            *string
 	published_date      *time.Time
+	latitude            *float64
+	addlatitude         *float64
+	longitude           *float64
+	addlongitude        *float64
 	created_at          *time.Time
 	clearedFields       map[string]struct{}
 	municipality        *int
@@ -382,7 +386,7 @@ func (m *MeshiMutation) PublishedDate() (r time.Time, exists bool) {
 // OldPublishedDate returns the old "published_date" field's value of the Meshi entity.
 // If the Meshi object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *MeshiMutation) OldPublishedDate(ctx context.Context) (v *time.Time, err error) {
+func (m *MeshiMutation) OldPublishedDate(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldPublishedDate is only allowed on UpdateOne operations")
 	}
@@ -396,22 +400,121 @@ func (m *MeshiMutation) OldPublishedDate(ctx context.Context) (v *time.Time, err
 	return oldValue.PublishedDate, nil
 }
 
-// ClearPublishedDate clears the value of the "published_date" field.
-func (m *MeshiMutation) ClearPublishedDate() {
-	m.published_date = nil
-	m.clearedFields[meshi.FieldPublishedDate] = struct{}{}
-}
-
-// PublishedDateCleared returns if the "published_date" field was cleared in this mutation.
-func (m *MeshiMutation) PublishedDateCleared() bool {
-	_, ok := m.clearedFields[meshi.FieldPublishedDate]
-	return ok
-}
-
 // ResetPublishedDate resets all changes to the "published_date" field.
 func (m *MeshiMutation) ResetPublishedDate() {
 	m.published_date = nil
-	delete(m.clearedFields, meshi.FieldPublishedDate)
+}
+
+// SetLatitude sets the "latitude" field.
+func (m *MeshiMutation) SetLatitude(f float64) {
+	m.latitude = &f
+	m.addlatitude = nil
+}
+
+// Latitude returns the value of the "latitude" field in the mutation.
+func (m *MeshiMutation) Latitude() (r float64, exists bool) {
+	v := m.latitude
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLatitude returns the old "latitude" field's value of the Meshi entity.
+// If the Meshi object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MeshiMutation) OldLatitude(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLatitude is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLatitude requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLatitude: %w", err)
+	}
+	return oldValue.Latitude, nil
+}
+
+// AddLatitude adds f to the "latitude" field.
+func (m *MeshiMutation) AddLatitude(f float64) {
+	if m.addlatitude != nil {
+		*m.addlatitude += f
+	} else {
+		m.addlatitude = &f
+	}
+}
+
+// AddedLatitude returns the value that was added to the "latitude" field in this mutation.
+func (m *MeshiMutation) AddedLatitude() (r float64, exists bool) {
+	v := m.addlatitude
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetLatitude resets all changes to the "latitude" field.
+func (m *MeshiMutation) ResetLatitude() {
+	m.latitude = nil
+	m.addlatitude = nil
+}
+
+// SetLongitude sets the "longitude" field.
+func (m *MeshiMutation) SetLongitude(f float64) {
+	m.longitude = &f
+	m.addlongitude = nil
+}
+
+// Longitude returns the value of the "longitude" field in the mutation.
+func (m *MeshiMutation) Longitude() (r float64, exists bool) {
+	v := m.longitude
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLongitude returns the old "longitude" field's value of the Meshi entity.
+// If the Meshi object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MeshiMutation) OldLongitude(ctx context.Context) (v float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLongitude is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLongitude requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLongitude: %w", err)
+	}
+	return oldValue.Longitude, nil
+}
+
+// AddLongitude adds f to the "longitude" field.
+func (m *MeshiMutation) AddLongitude(f float64) {
+	if m.addlongitude != nil {
+		*m.addlongitude += f
+	} else {
+		m.addlongitude = &f
+	}
+}
+
+// AddedLongitude returns the value that was added to the "longitude" field in this mutation.
+func (m *MeshiMutation) AddedLongitude() (r float64, exists bool) {
+	v := m.addlongitude
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetLongitude resets all changes to the "longitude" field.
+func (m *MeshiMutation) ResetLongitude() {
+	m.longitude = nil
+	m.addlongitude = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -523,7 +626,7 @@ func (m *MeshiMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *MeshiMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 10)
 	if m.article_id != nil {
 		fields = append(fields, meshi.FieldArticleID)
 	}
@@ -544,6 +647,12 @@ func (m *MeshiMutation) Fields() []string {
 	}
 	if m.published_date != nil {
 		fields = append(fields, meshi.FieldPublishedDate)
+	}
+	if m.latitude != nil {
+		fields = append(fields, meshi.FieldLatitude)
+	}
+	if m.longitude != nil {
+		fields = append(fields, meshi.FieldLongitude)
 	}
 	if m.created_at != nil {
 		fields = append(fields, meshi.FieldCreatedAt)
@@ -570,6 +679,10 @@ func (m *MeshiMutation) Field(name string) (ent.Value, bool) {
 		return m.SiteURL()
 	case meshi.FieldPublishedDate:
 		return m.PublishedDate()
+	case meshi.FieldLatitude:
+		return m.Latitude()
+	case meshi.FieldLongitude:
+		return m.Longitude()
 	case meshi.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -595,6 +708,10 @@ func (m *MeshiMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldSiteURL(ctx)
 	case meshi.FieldPublishedDate:
 		return m.OldPublishedDate(ctx)
+	case meshi.FieldLatitude:
+		return m.OldLatitude(ctx)
+	case meshi.FieldLongitude:
+		return m.OldLongitude(ctx)
 	case meshi.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -655,6 +772,20 @@ func (m *MeshiMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetPublishedDate(v)
 		return nil
+	case meshi.FieldLatitude:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLatitude(v)
+		return nil
+	case meshi.FieldLongitude:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLongitude(v)
+		return nil
 	case meshi.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -669,13 +800,26 @@ func (m *MeshiMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *MeshiMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addlatitude != nil {
+		fields = append(fields, meshi.FieldLatitude)
+	}
+	if m.addlongitude != nil {
+		fields = append(fields, meshi.FieldLongitude)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *MeshiMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case meshi.FieldLatitude:
+		return m.AddedLatitude()
+	case meshi.FieldLongitude:
+		return m.AddedLongitude()
+	}
 	return nil, false
 }
 
@@ -684,6 +828,20 @@ func (m *MeshiMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *MeshiMutation) AddField(name string, value ent.Value) error {
 	switch name {
+	case meshi.FieldLatitude:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddLatitude(v)
+		return nil
+	case meshi.FieldLongitude:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddLongitude(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Meshi numeric field %s", name)
 }
@@ -691,11 +849,7 @@ func (m *MeshiMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *MeshiMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(meshi.FieldPublishedDate) {
-		fields = append(fields, meshi.FieldPublishedDate)
-	}
-	return fields
+	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -708,11 +862,6 @@ func (m *MeshiMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *MeshiMutation) ClearField(name string) error {
-	switch name {
-	case meshi.FieldPublishedDate:
-		m.ClearPublishedDate()
-		return nil
-	}
 	return fmt.Errorf("unknown Meshi nullable field %s", name)
 }
 
@@ -740,6 +889,12 @@ func (m *MeshiMutation) ResetField(name string) error {
 		return nil
 	case meshi.FieldPublishedDate:
 		m.ResetPublishedDate()
+		return nil
+	case meshi.FieldLatitude:
+		m.ResetLatitude()
+		return nil
+	case meshi.FieldLongitude:
+		m.ResetLongitude()
 		return nil
 	case meshi.FieldCreatedAt:
 		m.ResetCreatedAt()

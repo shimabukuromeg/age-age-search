@@ -17,7 +17,9 @@ var (
 		{Name: "store_name", Type: field.TypeString, Default: "unknown"},
 		{Name: "address", Type: field.TypeString, Default: "unknown"},
 		{Name: "site_url", Type: field.TypeString, Default: "unknown"},
-		{Name: "published_date", Type: field.TypeTime, Nullable: true},
+		{Name: "published_date", Type: field.TypeTime},
+		{Name: "latitude", Type: field.TypeFloat64},
+		{Name: "longitude", Type: field.TypeFloat64},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "municipality_meshis", Type: field.TypeInt, Nullable: true},
 	}
@@ -29,7 +31,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "meshis_municipalities_meshis",
-				Columns:    []*schema.Column{MeshisColumns[9]},
+				Columns:    []*schema.Column{MeshisColumns[11]},
 				RefColumns: []*schema.Column{MunicipalitiesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},

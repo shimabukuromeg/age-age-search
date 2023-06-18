@@ -31,7 +31,11 @@ type Meshi struct {
 	// SiteURL holds the value of the "site_url" field.
 	SiteURL string `json:"site_url,omitempty"`
 	// PublishedDate holds the value of the "published_date" field.
-	PublishedDate *time.Time `json:"published_date,omitempty"`
+	PublishedDate time.Time `json:"published_date,omitempty"`
+	// Latitude holds the value of the "latitude" field.
+	Latitude float64 `json:"latitude,omitempty"`
+	// Longitude holds the value of the "longitude" field.
+	Longitude float64 `json:"longitude,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -68,6 +72,8 @@ func (*Meshi) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case meshi.FieldLatitude, meshi.FieldLongitude:
+			values[i] = new(sql.NullFloat64)
 		case meshi.FieldID:
 			values[i] = new(sql.NullInt64)
 		case meshi.FieldArticleID, meshi.FieldTitle, meshi.FieldImageURL, meshi.FieldStoreName, meshi.FieldAddress, meshi.FieldSiteURL:
@@ -137,8 +143,19 @@ func (m *Meshi) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field published_date", values[i])
 			} else if value.Valid {
-				m.PublishedDate = new(time.Time)
-				*m.PublishedDate = value.Time
+				m.PublishedDate = value.Time
+			}
+		case meshi.FieldLatitude:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field latitude", values[i])
+			} else if value.Valid {
+				m.Latitude = value.Float64
+			}
+		case meshi.FieldLongitude:
+			if value, ok := values[i].(*sql.NullFloat64); !ok {
+				return fmt.Errorf("unexpected type %T for field longitude", values[i])
+			} else if value.Valid {
+				m.Longitude = value.Float64
 			}
 		case meshi.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -212,10 +229,14 @@ func (m *Meshi) String() string {
 	builder.WriteString("site_url=")
 	builder.WriteString(m.SiteURL)
 	builder.WriteString(", ")
-	if v := m.PublishedDate; v != nil {
-		builder.WriteString("published_date=")
-		builder.WriteString(v.Format(time.ANSIC))
-	}
+	builder.WriteString("published_date=")
+	builder.WriteString(m.PublishedDate.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("latitude=")
+	builder.WriteString(fmt.Sprintf("%v", m.Latitude))
+	builder.WriteString(", ")
+	builder.WriteString("longitude=")
+	builder.WriteString(fmt.Sprintf("%v", m.Longitude))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(m.CreatedAt.Format(time.ANSIC))

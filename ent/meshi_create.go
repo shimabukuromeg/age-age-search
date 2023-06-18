@@ -105,11 +105,15 @@ func (mc *MeshiCreate) SetPublishedDate(t time.Time) *MeshiCreate {
 	return mc
 }
 
-// SetNillablePublishedDate sets the "published_date" field if the given value is not nil.
-func (mc *MeshiCreate) SetNillablePublishedDate(t *time.Time) *MeshiCreate {
-	if t != nil {
-		mc.SetPublishedDate(*t)
-	}
+// SetLatitude sets the "latitude" field.
+func (mc *MeshiCreate) SetLatitude(f float64) *MeshiCreate {
+	mc.mutation.SetLatitude(f)
+	return mc
+}
+
+// SetLongitude sets the "longitude" field.
+func (mc *MeshiCreate) SetLongitude(f float64) *MeshiCreate {
+	mc.mutation.SetLongitude(f)
 	return mc
 }
 
@@ -227,6 +231,15 @@ func (mc *MeshiCreate) check() error {
 	if _, ok := mc.mutation.SiteURL(); !ok {
 		return &ValidationError{Name: "site_url", err: errors.New(`ent: missing required field "Meshi.site_url"`)}
 	}
+	if _, ok := mc.mutation.PublishedDate(); !ok {
+		return &ValidationError{Name: "published_date", err: errors.New(`ent: missing required field "Meshi.published_date"`)}
+	}
+	if _, ok := mc.mutation.Latitude(); !ok {
+		return &ValidationError{Name: "latitude", err: errors.New(`ent: missing required field "Meshi.latitude"`)}
+	}
+	if _, ok := mc.mutation.Longitude(); !ok {
+		return &ValidationError{Name: "longitude", err: errors.New(`ent: missing required field "Meshi.longitude"`)}
+	}
 	if _, ok := mc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Meshi.created_at"`)}
 	}
@@ -283,7 +296,15 @@ func (mc *MeshiCreate) createSpec() (*Meshi, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := mc.mutation.PublishedDate(); ok {
 		_spec.SetField(meshi.FieldPublishedDate, field.TypeTime, value)
-		_node.PublishedDate = &value
+		_node.PublishedDate = value
+	}
+	if value, ok := mc.mutation.Latitude(); ok {
+		_spec.SetField(meshi.FieldLatitude, field.TypeFloat64, value)
+		_node.Latitude = value
+	}
+	if value, ok := mc.mutation.Longitude(); ok {
+		_spec.SetField(meshi.FieldLongitude, field.TypeFloat64, value)
+		_node.Longitude = value
 	}
 	if value, ok := mc.mutation.CreatedAt(); ok {
 		_spec.SetField(meshi.FieldCreatedAt, field.TypeTime, value)
@@ -442,9 +463,39 @@ func (u *MeshiUpsert) UpdatePublishedDate() *MeshiUpsert {
 	return u
 }
 
-// ClearPublishedDate clears the value of the "published_date" field.
-func (u *MeshiUpsert) ClearPublishedDate() *MeshiUpsert {
-	u.SetNull(meshi.FieldPublishedDate)
+// SetLatitude sets the "latitude" field.
+func (u *MeshiUpsert) SetLatitude(v float64) *MeshiUpsert {
+	u.Set(meshi.FieldLatitude, v)
+	return u
+}
+
+// UpdateLatitude sets the "latitude" field to the value that was provided on create.
+func (u *MeshiUpsert) UpdateLatitude() *MeshiUpsert {
+	u.SetExcluded(meshi.FieldLatitude)
+	return u
+}
+
+// AddLatitude adds v to the "latitude" field.
+func (u *MeshiUpsert) AddLatitude(v float64) *MeshiUpsert {
+	u.Add(meshi.FieldLatitude, v)
+	return u
+}
+
+// SetLongitude sets the "longitude" field.
+func (u *MeshiUpsert) SetLongitude(v float64) *MeshiUpsert {
+	u.Set(meshi.FieldLongitude, v)
+	return u
+}
+
+// UpdateLongitude sets the "longitude" field to the value that was provided on create.
+func (u *MeshiUpsert) UpdateLongitude() *MeshiUpsert {
+	u.SetExcluded(meshi.FieldLongitude)
+	return u
+}
+
+// AddLongitude adds v to the "longitude" field.
+func (u *MeshiUpsert) AddLongitude(v float64) *MeshiUpsert {
+	u.Add(meshi.FieldLongitude, v)
 	return u
 }
 
@@ -598,10 +649,45 @@ func (u *MeshiUpsertOne) UpdatePublishedDate() *MeshiUpsertOne {
 	})
 }
 
-// ClearPublishedDate clears the value of the "published_date" field.
-func (u *MeshiUpsertOne) ClearPublishedDate() *MeshiUpsertOne {
+// SetLatitude sets the "latitude" field.
+func (u *MeshiUpsertOne) SetLatitude(v float64) *MeshiUpsertOne {
 	return u.Update(func(s *MeshiUpsert) {
-		s.ClearPublishedDate()
+		s.SetLatitude(v)
+	})
+}
+
+// AddLatitude adds v to the "latitude" field.
+func (u *MeshiUpsertOne) AddLatitude(v float64) *MeshiUpsertOne {
+	return u.Update(func(s *MeshiUpsert) {
+		s.AddLatitude(v)
+	})
+}
+
+// UpdateLatitude sets the "latitude" field to the value that was provided on create.
+func (u *MeshiUpsertOne) UpdateLatitude() *MeshiUpsertOne {
+	return u.Update(func(s *MeshiUpsert) {
+		s.UpdateLatitude()
+	})
+}
+
+// SetLongitude sets the "longitude" field.
+func (u *MeshiUpsertOne) SetLongitude(v float64) *MeshiUpsertOne {
+	return u.Update(func(s *MeshiUpsert) {
+		s.SetLongitude(v)
+	})
+}
+
+// AddLongitude adds v to the "longitude" field.
+func (u *MeshiUpsertOne) AddLongitude(v float64) *MeshiUpsertOne {
+	return u.Update(func(s *MeshiUpsert) {
+		s.AddLongitude(v)
+	})
+}
+
+// UpdateLongitude sets the "longitude" field to the value that was provided on create.
+func (u *MeshiUpsertOne) UpdateLongitude() *MeshiUpsertOne {
+	return u.Update(func(s *MeshiUpsert) {
+		s.UpdateLongitude()
 	})
 }
 
@@ -917,10 +1003,45 @@ func (u *MeshiUpsertBulk) UpdatePublishedDate() *MeshiUpsertBulk {
 	})
 }
 
-// ClearPublishedDate clears the value of the "published_date" field.
-func (u *MeshiUpsertBulk) ClearPublishedDate() *MeshiUpsertBulk {
+// SetLatitude sets the "latitude" field.
+func (u *MeshiUpsertBulk) SetLatitude(v float64) *MeshiUpsertBulk {
 	return u.Update(func(s *MeshiUpsert) {
-		s.ClearPublishedDate()
+		s.SetLatitude(v)
+	})
+}
+
+// AddLatitude adds v to the "latitude" field.
+func (u *MeshiUpsertBulk) AddLatitude(v float64) *MeshiUpsertBulk {
+	return u.Update(func(s *MeshiUpsert) {
+		s.AddLatitude(v)
+	})
+}
+
+// UpdateLatitude sets the "latitude" field to the value that was provided on create.
+func (u *MeshiUpsertBulk) UpdateLatitude() *MeshiUpsertBulk {
+	return u.Update(func(s *MeshiUpsert) {
+		s.UpdateLatitude()
+	})
+}
+
+// SetLongitude sets the "longitude" field.
+func (u *MeshiUpsertBulk) SetLongitude(v float64) *MeshiUpsertBulk {
+	return u.Update(func(s *MeshiUpsert) {
+		s.SetLongitude(v)
+	})
+}
+
+// AddLongitude adds v to the "longitude" field.
+func (u *MeshiUpsertBulk) AddLongitude(v float64) *MeshiUpsertBulk {
+	return u.Update(func(s *MeshiUpsert) {
+		s.AddLongitude(v)
+	})
+}
+
+// UpdateLongitude sets the "longitude" field to the value that was provided on create.
+func (u *MeshiUpsertBulk) UpdateLongitude() *MeshiUpsertBulk {
+	return u.Update(func(s *MeshiUpsert) {
+		s.UpdateLongitude()
 	})
 }
 

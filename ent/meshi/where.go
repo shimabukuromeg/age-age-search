@@ -90,6 +90,16 @@ func PublishedDate(v time.Time) predicate.Meshi {
 	return predicate.Meshi(sql.FieldEQ(FieldPublishedDate, v))
 }
 
+// Latitude applies equality check predicate on the "latitude" field. It's identical to LatitudeEQ.
+func Latitude(v float64) predicate.Meshi {
+	return predicate.Meshi(sql.FieldEQ(FieldLatitude, v))
+}
+
+// Longitude applies equality check predicate on the "longitude" field. It's identical to LongitudeEQ.
+func Longitude(v float64) predicate.Meshi {
+	return predicate.Meshi(sql.FieldEQ(FieldLongitude, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Meshi {
 	return predicate.Meshi(sql.FieldEQ(FieldCreatedAt, v))
@@ -525,14 +535,84 @@ func PublishedDateLTE(v time.Time) predicate.Meshi {
 	return predicate.Meshi(sql.FieldLTE(FieldPublishedDate, v))
 }
 
-// PublishedDateIsNil applies the IsNil predicate on the "published_date" field.
-func PublishedDateIsNil() predicate.Meshi {
-	return predicate.Meshi(sql.FieldIsNull(FieldPublishedDate))
+// LatitudeEQ applies the EQ predicate on the "latitude" field.
+func LatitudeEQ(v float64) predicate.Meshi {
+	return predicate.Meshi(sql.FieldEQ(FieldLatitude, v))
 }
 
-// PublishedDateNotNil applies the NotNil predicate on the "published_date" field.
-func PublishedDateNotNil() predicate.Meshi {
-	return predicate.Meshi(sql.FieldNotNull(FieldPublishedDate))
+// LatitudeNEQ applies the NEQ predicate on the "latitude" field.
+func LatitudeNEQ(v float64) predicate.Meshi {
+	return predicate.Meshi(sql.FieldNEQ(FieldLatitude, v))
+}
+
+// LatitudeIn applies the In predicate on the "latitude" field.
+func LatitudeIn(vs ...float64) predicate.Meshi {
+	return predicate.Meshi(sql.FieldIn(FieldLatitude, vs...))
+}
+
+// LatitudeNotIn applies the NotIn predicate on the "latitude" field.
+func LatitudeNotIn(vs ...float64) predicate.Meshi {
+	return predicate.Meshi(sql.FieldNotIn(FieldLatitude, vs...))
+}
+
+// LatitudeGT applies the GT predicate on the "latitude" field.
+func LatitudeGT(v float64) predicate.Meshi {
+	return predicate.Meshi(sql.FieldGT(FieldLatitude, v))
+}
+
+// LatitudeGTE applies the GTE predicate on the "latitude" field.
+func LatitudeGTE(v float64) predicate.Meshi {
+	return predicate.Meshi(sql.FieldGTE(FieldLatitude, v))
+}
+
+// LatitudeLT applies the LT predicate on the "latitude" field.
+func LatitudeLT(v float64) predicate.Meshi {
+	return predicate.Meshi(sql.FieldLT(FieldLatitude, v))
+}
+
+// LatitudeLTE applies the LTE predicate on the "latitude" field.
+func LatitudeLTE(v float64) predicate.Meshi {
+	return predicate.Meshi(sql.FieldLTE(FieldLatitude, v))
+}
+
+// LongitudeEQ applies the EQ predicate on the "longitude" field.
+func LongitudeEQ(v float64) predicate.Meshi {
+	return predicate.Meshi(sql.FieldEQ(FieldLongitude, v))
+}
+
+// LongitudeNEQ applies the NEQ predicate on the "longitude" field.
+func LongitudeNEQ(v float64) predicate.Meshi {
+	return predicate.Meshi(sql.FieldNEQ(FieldLongitude, v))
+}
+
+// LongitudeIn applies the In predicate on the "longitude" field.
+func LongitudeIn(vs ...float64) predicate.Meshi {
+	return predicate.Meshi(sql.FieldIn(FieldLongitude, vs...))
+}
+
+// LongitudeNotIn applies the NotIn predicate on the "longitude" field.
+func LongitudeNotIn(vs ...float64) predicate.Meshi {
+	return predicate.Meshi(sql.FieldNotIn(FieldLongitude, vs...))
+}
+
+// LongitudeGT applies the GT predicate on the "longitude" field.
+func LongitudeGT(v float64) predicate.Meshi {
+	return predicate.Meshi(sql.FieldGT(FieldLongitude, v))
+}
+
+// LongitudeGTE applies the GTE predicate on the "longitude" field.
+func LongitudeGTE(v float64) predicate.Meshi {
+	return predicate.Meshi(sql.FieldGTE(FieldLongitude, v))
+}
+
+// LongitudeLT applies the LT predicate on the "longitude" field.
+func LongitudeLT(v float64) predicate.Meshi {
+	return predicate.Meshi(sql.FieldLT(FieldLongitude, v))
+}
+
+// LongitudeLTE applies the LTE predicate on the "longitude" field.
+func LongitudeLTE(v float64) predicate.Meshi {
+	return predicate.Meshi(sql.FieldLTE(FieldLongitude, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

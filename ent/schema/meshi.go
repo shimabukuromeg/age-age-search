@@ -28,9 +28,9 @@ func (Meshi) Fields() []ent.Field {
 			Default("unknown"),
 		field.String("site_url").
 			Default("unknown"),
-		field.Time("published_date").
-			Optional().
-			Nillable(),
+		field.Time("published_date"),
+		field.Float("latitude"),
+		field.Float("longitude"),
 		field.Time("created_at").
 			Default(time.Now),
 	}

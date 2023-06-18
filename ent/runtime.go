@@ -37,7 +37,7 @@ func init() {
 	// meshi.DefaultSiteURL holds the default value on creation for the site_url field.
 	meshi.DefaultSiteURL = meshiDescSiteURL.Default.(string)
 	// meshiDescCreatedAt is the schema descriptor for created_at field.
-	meshiDescCreatedAt := meshiFields[7].Descriptor()
+	meshiDescCreatedAt := meshiFields[9].Descriptor()
 	// meshi.DefaultCreatedAt holds the default value on creation for the created_at field.
 	meshi.DefaultCreatedAt = meshiDescCreatedAt.Default.(func() time.Time)
 	municipalityFields := schema.Municipality{}.Fields()

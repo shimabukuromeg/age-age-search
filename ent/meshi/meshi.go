@@ -28,6 +28,10 @@ const (
 	FieldSiteURL = "site_url"
 	// FieldPublishedDate holds the string denoting the published_date field in the database.
 	FieldPublishedDate = "published_date"
+	// FieldLatitude holds the string denoting the latitude field in the database.
+	FieldLatitude = "latitude"
+	// FieldLongitude holds the string denoting the longitude field in the database.
+	FieldLongitude = "longitude"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeMunicipality holds the string denoting the municipality edge name in mutations.
@@ -53,6 +57,8 @@ var Columns = []string{
 	FieldAddress,
 	FieldSiteURL,
 	FieldPublishedDate,
+	FieldLatitude,
+	FieldLongitude,
 	FieldCreatedAt,
 }
 
@@ -133,6 +139,16 @@ func BySiteURL(opts ...sql.OrderTermOption) OrderOption {
 // ByPublishedDate orders the results by the published_date field.
 func ByPublishedDate(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPublishedDate, opts...).ToFunc()
+}
+
+// ByLatitude orders the results by the latitude field.
+func ByLatitude(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLatitude, opts...).ToFunc()
+}
+
+// ByLongitude orders the results by the longitude field.
+func ByLongitude(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldLongitude, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.
