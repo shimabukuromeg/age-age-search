@@ -17,6 +17,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/shimabukuromeg/ageage-search/ent"
 	"github.com/shimabukuromeg/ageage-search/ent/meshi"
+	"github.com/shimabukuromeg/ageage-search/ent/migrate"
 	"github.com/shimabukuromeg/ageage-search/ent/municipality"
 
 	_ "github.com/lib/pq"
@@ -137,7 +138,7 @@ func SetupDB(dbType, dsn string) (*ent.Client, error) {
 	if dbType != "sqlite3" && dbType != "postgres" {
 		return nil, fmt.Errorf("invalid dbType: %s", dbType)
 	}
-	if err := client.Schema.Create(context.Background()); err != nil {
+	if err := client.Schema.Create(context.Background(), migrate.WithGlobalUniqueID(true)); err != nil {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
 

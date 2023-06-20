@@ -3,7 +3,9 @@ package schema
 import (
 	"time"
 
+	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
@@ -17,22 +19,44 @@ type Meshi struct {
 func (Meshi) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("article_id").
-			Unique(),
+			Unique().
+			Annotations(
+				entgql.OrderField("ARTICLE_ID"),
+			),
 		field.String("title").
-			Default("unknown"),
+			Default("unknown").Annotations(
+			entgql.OrderField("TITLE"),
+		),
 		field.String("image_url").
-			Default("unknown"),
+			Default("unknown").Annotations(
+			entgql.OrderField("IMAGE_URL"),
+		),
 		field.String("store_name").
-			Default("unknown"),
+			Default("unknown").
+			Annotations(
+				entgql.OrderField("STORE_NAME"),
+			),
 		field.String("address").
-			Default("unknown"),
+			Default("unknown").Annotations(
+			entgql.OrderField("ADDRESS"),
+		),
 		field.String("site_url").
-			Default("unknown"),
-		field.Time("published_date"),
-		field.Float("latitude"),
-		field.Float("longitude"),
+			Default("unknown").Annotations(
+			entgql.OrderField("SITE_URL"),
+		),
+		field.Time("published_date").Annotations(
+			entgql.OrderField("PUBLISHED_DATE"),
+		),
+		field.Float("latitude").Annotations(
+			entgql.OrderField("LATITUDE"),
+		),
+		field.Float("longitude").Annotations(
+			entgql.OrderField("LONGITUDE"),
+		),
 		field.Time("created_at").
-			Default(time.Now),
+			Default(time.Now).Annotations(
+			entgql.OrderField("CREATED_AT"),
+		),
 	}
 }
 
@@ -42,5 +66,12 @@ func (Meshi) Edges() []ent.Edge {
 		edge.From("municipality", Municipality.Type).
 			Ref("meshis").
 			Unique(),
+	}
+}
+
+func (Meshi) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entgql.RelayConnection(),
+		entgql.QueryField(),
 	}
 }
