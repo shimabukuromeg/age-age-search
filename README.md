@@ -35,7 +35,8 @@ If you specify -t postgres but do not specify -d or DSN, the tool will prompt yo
 The scraped data can be accessed via a GraphQL interface. The server can be started with the following command:
 
 ```bash
-$ go run ./cmd/ageage-server
+$ go build -tags netgo -ldflags '-s -w' -o app ./cmd/ageage-server
+$ ./app
 ```
 
 After running the command, you can access GraphiQL by navigating to http://localhost:8081 on your web browser.
@@ -44,7 +45,8 @@ For PostgreSQL, you need to set the DSN environment variable:
 
 ```bash
 $ export DSN="postgresql://postgres@localhost:5555/ageagedb?sslmode=disable"
-$ go run ./cmd/ageage-server
+$ go build -tags netgo -ldflags '-s -w' -o app ./cmd/ageage-server
+$ ./app
 ```
 
 The server assumes that data has already been scraped and exists in the database.
