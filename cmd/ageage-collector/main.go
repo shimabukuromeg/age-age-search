@@ -131,12 +131,12 @@ func init() {
 }
 
 func SetupDB(dbType, dsn string) (*ent.Client, error) {
+	if dbType != "sqlite3" && dbType != "postgres" {
+		return nil, fmt.Errorf("invalid dbType: %s", dbType)
+	}
 	client, err := ent.Open(dbType, dsn)
 	if err != nil {
 		return nil, err
-	}
-	if dbType != "sqlite3" && dbType != "postgres" {
-		return nil, fmt.Errorf("invalid dbType: %s", dbType)
 	}
 	if err := client.Schema.Create(context.Background(), migrate.WithGlobalUniqueID(true)); err != nil {
 		log.Fatalf("failed creating schema resources: %v", err)
