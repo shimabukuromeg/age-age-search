@@ -50,3 +50,35 @@ $ ./app
 ```
 
 The server assumes that data has already been scraped and exists in the database.
+
+### Sample Queries
+
+After the server is started, you can issue queries to the scraped data through the GraphQL interface. Here are some examples:
+
+```graphql
+query {
+  municipalities(where: { or: [{ nameContains: "那覇" }] }) {
+    edges {
+      node {
+        id
+        name
+        meshis(first: 100) {
+          totalCount
+          edges {
+            node {
+              __typename
+              id
+              title
+              address
+              storeName
+              siteURL
+              imageURL
+            }
+          }
+        }
+      }
+      cursor
+    }
+  }
+}
+```
