@@ -27,6 +27,8 @@ type Client struct {
 	Meshi *MeshiClient
 	// Municipality is the client for interacting with the Municipality builders.
 	Municipality *MunicipalityClient
+	// additional fields for node api
+	tables tables
 }
 
 // NewClient creates a new client configured with the given options.
