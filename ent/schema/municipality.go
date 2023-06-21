@@ -32,7 +32,9 @@ func (Municipality) Fields() []ent.Field {
 // Edges of the Municipality.
 func (Municipality) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("meshis", Meshi.Type),
+		edge.To("meshis", Meshi.Type).Annotations(
+			entgql.RelayConnection(),
+		),
 	}
 }
 

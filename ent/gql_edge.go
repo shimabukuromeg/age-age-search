@@ -16,14 +16,23 @@ func (m *Meshi) Municipality(ctx context.Context) (*Municipality, error) {
 	return result, MaskNotFound(err)
 }
 
-func (m *Municipality) Meshis(ctx context.Context) (result []*Meshi, err error) {
-	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
-		result, err = m.NamedMeshis(graphql.GetFieldContext(ctx).Field.Alias)
-	} else {
-		result, err = m.Edges.MeshisOrErr()
+func (m *Municipality) Meshis(
+	ctx context.Context, after *Cursor, first *int, before *Cursor, last *int, orderBy *MeshiOrder, where *MeshiWhereInput,
+) (*MeshiConnection, error) {
+	opts := []MeshiPaginateOption{
+		WithMeshiOrder(orderBy),
+		WithMeshiFilter(where.Filter),
 	}
-	if IsNotLoaded(err) {
-		result, err = m.QueryMeshis().All(ctx)
+	alias := graphql.GetFieldContext(ctx).Field.Alias
+	totalCount, hasTotalCount := m.Edges.totalCount[0][alias]
+	if nodes, err := m.NamedMeshis(alias); err == nil || hasTotalCount {
+		pager, err := newMeshiPager(opts, last != nil)
+		if err != nil {
+			return nil, err
+		}
+		conn := &MeshiConnection{Edges: []*MeshiEdge{}, TotalCount: totalCount}
+		conn.build(nodes, pager, after, first, before, last)
+		return conn, nil
 	}
-	return result, err
+	return m.QueryMeshis().Paginate(ctx, after, first, before, last, opts...)
 }

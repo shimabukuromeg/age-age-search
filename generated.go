@@ -75,7 +75,7 @@ type ComplexityRoot struct {
 	Municipality struct {
 		CreatedAt func(childComplexity int) int
 		ID        func(childComplexity int) int
-		Meshis    func(childComplexity int) int
+		Meshis    func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.MeshiOrder, where *ent.MeshiWhereInput) int
 		Name      func(childComplexity int) int
 	}
 
@@ -265,7 +265,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Municipality.Meshis(childComplexity), true
+		args, err := ec.field_Municipality_meshis_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Municipality.Meshis(childComplexity, args["after"].(*entgql.Cursor[int]), args["first"].(*int), args["before"].(*entgql.Cursor[int]), args["last"].(*int), args["orderBy"].(*ent.MeshiOrder), args["where"].(*ent.MeshiWhereInput)), true
 
 	case "Municipality.name":
 		if e.complexity.Municipality.Name == nil {
@@ -497,6 +502,66 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Municipality_meshis_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *entgql.Cursor[int]
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg0, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg1
+	var arg2 *entgql.Cursor[int]
+	if tmp, ok := rawArgs["before"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+		arg2, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["before"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["last"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last"] = arg3
+	var arg4 *ent.MeshiOrder
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+		arg4, err = ec.unmarshalOMeshiOrder2ᚖgithubᚗcomᚋshimabukuromegᚋageageᚑsearchᚋentᚐMeshiOrder(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["orderBy"] = arg4
+	var arg5 *ent.MeshiWhereInput
+	if tmp, ok := rawArgs["where"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("where"))
+		arg5, err = ec.unmarshalOMeshiWhereInput2ᚖgithubᚗcomᚋshimabukuromegᚋageageᚑsearchᚋentᚐMeshiWhereInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["where"] = arg5
+	return args, nil
+}
 
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -1638,18 +1703,21 @@ func (ec *executionContext) _Municipality_meshis(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Meshis(ctx)
+		return obj.Meshis(ctx, fc.Args["after"].(*entgql.Cursor[int]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[int]), fc.Args["last"].(*int), fc.Args["orderBy"].(*ent.MeshiOrder), fc.Args["where"].(*ent.MeshiWhereInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.([]*ent.Meshi)
+	res := resTmp.(*ent.MeshiConnection)
 	fc.Result = res
-	return ec.marshalOMeshi2ᚕᚖgithubᚗcomᚋshimabukuromegᚋageageᚑsearchᚋentᚐMeshiᚄ(ctx, field.Selections, res)
+	return ec.marshalNMeshiConnection2ᚖgithubᚗcomᚋshimabukuromegᚋageageᚑsearchᚋentᚐMeshiConnection(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Municipality_meshis(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1660,33 +1728,26 @@ func (ec *executionContext) fieldContext_Municipality_meshis(ctx context.Context
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "id":
-				return ec.fieldContext_Meshi_id(ctx, field)
-			case "articleID":
-				return ec.fieldContext_Meshi_articleID(ctx, field)
-			case "title":
-				return ec.fieldContext_Meshi_title(ctx, field)
-			case "imageURL":
-				return ec.fieldContext_Meshi_imageURL(ctx, field)
-			case "storeName":
-				return ec.fieldContext_Meshi_storeName(ctx, field)
-			case "address":
-				return ec.fieldContext_Meshi_address(ctx, field)
-			case "siteURL":
-				return ec.fieldContext_Meshi_siteURL(ctx, field)
-			case "publishedDate":
-				return ec.fieldContext_Meshi_publishedDate(ctx, field)
-			case "latitude":
-				return ec.fieldContext_Meshi_latitude(ctx, field)
-			case "longitude":
-				return ec.fieldContext_Meshi_longitude(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Meshi_createdAt(ctx, field)
-			case "municipality":
-				return ec.fieldContext_Meshi_municipality(ctx, field)
+			case "edges":
+				return ec.fieldContext_MeshiConnection_edges(ctx, field)
+			case "pageInfo":
+				return ec.fieldContext_MeshiConnection_pageInfo(ctx, field)
+			case "totalCount":
+				return ec.fieldContext_MeshiConnection_totalCount(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Meshi", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type MeshiConnection", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Municipality_meshis_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -6045,6 +6106,9 @@ func (ec *executionContext) _Municipality(ctx context.Context, sel ast.Selection
 					}
 				}()
 				res = ec._Municipality_meshis(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
 				return res
 			}
 
@@ -6789,16 +6853,6 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) marshalNMeshi2ᚖgithubᚗcomᚋshimabukuromegᚋageageᚑsearchᚋentᚐMeshi(ctx context.Context, sel ast.SelectionSet, v *ent.Meshi) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	return ec._Meshi(ctx, sel, v)
-}
-
 func (ec *executionContext) marshalNMeshiConnection2githubᚗcomᚋshimabukuromegᚋageageᚑsearchᚋentᚐMeshiConnection(ctx context.Context, sel ast.SelectionSet, v ent.MeshiConnection) graphql.Marshaler {
 	return ec._MeshiConnection(ctx, sel, &v)
 }
@@ -7368,53 +7422,6 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	}
 	res := graphql.MarshalInt(*v)
 	return res
-}
-
-func (ec *executionContext) marshalOMeshi2ᚕᚖgithubᚗcomᚋshimabukuromegᚋageageᚑsearchᚋentᚐMeshiᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Meshi) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNMeshi2ᚖgithubᚗcomᚋshimabukuromegᚋageageᚑsearchᚋentᚐMeshi(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
 }
 
 func (ec *executionContext) marshalOMeshi2ᚖgithubᚗcomᚋshimabukuromegᚋageageᚑsearchᚋentᚐMeshi(ctx context.Context, sel ast.SelectionSet, v *ent.Meshi) graphql.Marshaler {
