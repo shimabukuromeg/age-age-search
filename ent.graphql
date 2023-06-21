@@ -1,48 +1,115 @@
-directive @goField(forceResolver: Boolean, name: String) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
-directive @goModel(model: String, models: [String!]) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
+directive @goField(
+  forceResolver: Boolean
+  name: String
+) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+directive @goModel(
+  model: String
+  models: [String!]
+) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
 """
 Define a Relay Cursor type:
 https://relay.dev/graphql/connections.htm#sec-Cursor
 """
 scalar Cursor
+"""
+アゲアゲめし
+"""
 type Meshi implements Node {
+  """
+  ID
+  """
   id: ID!
+  """
+  記事ID
+  """
   articleID: String!
+  """
+  タイトル
+  """
   title: String!
+  """
+  画像URL
+  """
   imageURL: String!
+  """
+  店舗名
+  """
   storeName: String!
+  """
+  住所
+  """
   address: String!
+  """
+  サイトURL
+  """
   siteURL: String!
+  """
+  記事公開日
+  """
   publishedDate: Time!
+  """
+  緯度
+  """
   latitude: Float!
+  """
+  経度
+  """
   longitude: Float!
+  """
+  作成日時
+  """
   createdAt: Time!
+  """
+  市町村
+  """
   municipality: Municipality
 }
-"""A connection to a list of items."""
+"""
+A connection to a list of items.
+"""
 type MeshiConnection {
-  """A list of edges."""
+  """
+  A list of edges.
+  """
   edges: [MeshiEdge]
-  """Information to aid in pagination."""
+  """
+  Information to aid in pagination.
+  """
   pageInfo: PageInfo!
-  """Identifies the total count of items in the connection."""
+  """
+  Identifies the total count of items in the connection.
+  """
   totalCount: Int!
 }
-"""An edge in a connection."""
+"""
+An edge in a connection.
+"""
 type MeshiEdge {
-  """The item at the end of the edge."""
+  """
+  The item at the end of the edge.
+  """
   node: Meshi
-  """A cursor for use in pagination."""
+  """
+  A cursor for use in pagination.
+  """
   cursor: Cursor!
 }
-"""Ordering options for Meshi connections"""
+"""
+Ordering options for Meshi connections
+"""
 input MeshiOrder {
-  """The ordering direction."""
+  """
+  The ordering direction.
+  """
   direction: OrderDirection! = ASC
-  """The field by which to order Meshis."""
+  """
+  The field by which to order Meshis.
+  """
   field: MeshiOrderField!
 }
-"""Properties by which Meshi connections can be ordered."""
+"""
+Properties by which Meshi connections can be ordered.
+"""
 enum MeshiOrderField {
   ARTICLE_ID
   TITLE
@@ -63,7 +130,9 @@ input MeshiWhereInput {
   not: MeshiWhereInput
   and: [MeshiWhereInput!]
   or: [MeshiWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -72,7 +141,9 @@ input MeshiWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """article_id field predicates"""
+  """
+  article_id field predicates
+  """
   articleID: String
   articleIDNEQ: String
   articleIDIn: [String!]
@@ -86,7 +157,9 @@ input MeshiWhereInput {
   articleIDHasSuffix: String
   articleIDEqualFold: String
   articleIDContainsFold: String
-  """title field predicates"""
+  """
+  title field predicates
+  """
   title: String
   titleNEQ: String
   titleIn: [String!]
@@ -100,7 +173,9 @@ input MeshiWhereInput {
   titleHasSuffix: String
   titleEqualFold: String
   titleContainsFold: String
-  """image_url field predicates"""
+  """
+  image_url field predicates
+  """
   imageURL: String
   imageURLNEQ: String
   imageURLIn: [String!]
@@ -114,7 +189,9 @@ input MeshiWhereInput {
   imageURLHasSuffix: String
   imageURLEqualFold: String
   imageURLContainsFold: String
-  """store_name field predicates"""
+  """
+  store_name field predicates
+  """
   storeName: String
   storeNameNEQ: String
   storeNameIn: [String!]
@@ -128,7 +205,9 @@ input MeshiWhereInput {
   storeNameHasSuffix: String
   storeNameEqualFold: String
   storeNameContainsFold: String
-  """address field predicates"""
+  """
+  address field predicates
+  """
   address: String
   addressNEQ: String
   addressIn: [String!]
@@ -142,7 +221,9 @@ input MeshiWhereInput {
   addressHasSuffix: String
   addressEqualFold: String
   addressContainsFold: String
-  """site_url field predicates"""
+  """
+  site_url field predicates
+  """
   siteURL: String
   siteURLNEQ: String
   siteURLIn: [String!]
@@ -156,7 +237,9 @@ input MeshiWhereInput {
   siteURLHasSuffix: String
   siteURLEqualFold: String
   siteURLContainsFold: String
-  """published_date field predicates"""
+  """
+  published_date field predicates
+  """
   publishedDate: Time
   publishedDateNEQ: Time
   publishedDateIn: [Time!]
@@ -165,7 +248,9 @@ input MeshiWhereInput {
   publishedDateGTE: Time
   publishedDateLT: Time
   publishedDateLTE: Time
-  """latitude field predicates"""
+  """
+  latitude field predicates
+  """
   latitude: Float
   latitudeNEQ: Float
   latitudeIn: [Float!]
@@ -174,7 +259,9 @@ input MeshiWhereInput {
   latitudeGTE: Float
   latitudeLT: Float
   latitudeLTE: Float
-  """longitude field predicates"""
+  """
+  longitude field predicates
+  """
   longitude: Float
   longitudeNEQ: Float
   longitudeIn: [Float!]
@@ -183,7 +270,9 @@ input MeshiWhereInput {
   longitudeGTE: Float
   longitudeLT: Float
   longitudeLTE: Float
-  """created_at field predicates"""
+  """
+  created_at field predicates
+  """
   createdAt: Time
   createdAtNEQ: Time
   createdAtIn: [Time!]
@@ -192,40 +281,79 @@ input MeshiWhereInput {
   createdAtGTE: Time
   createdAtLT: Time
   createdAtLTE: Time
-  """municipality edge predicates"""
+  """
+  municipality edge predicates
+  """
   hasMunicipality: Boolean
   hasMunicipalityWith: [MunicipalityWhereInput!]
 }
+"""
+市町村
+"""
 type Municipality implements Node {
+  """
+  ID
+  """
   id: ID!
+  """
+  名前
+  """
   name: String!
+  """
+  作成日時
+  """
   createdAt: Time!
+  """
+  あげあげめしリスト
+  """
   meshis: [Meshi!]
 }
-"""A connection to a list of items."""
+"""
+A connection to a list of items.
+"""
 type MunicipalityConnection {
-  """A list of edges."""
+  """
+  A list of edges.
+  """
   edges: [MunicipalityEdge]
-  """Information to aid in pagination."""
+  """
+  Information to aid in pagination.
+  """
   pageInfo: PageInfo!
-  """Identifies the total count of items in the connection."""
+  """
+  Identifies the total count of items in the connection.
+  """
   totalCount: Int!
 }
-"""An edge in a connection."""
+"""
+An edge in a connection.
+"""
 type MunicipalityEdge {
-  """The item at the end of the edge."""
+  """
+  The item at the end of the edge.
+  """
   node: Municipality
-  """A cursor for use in pagination."""
+  """
+  A cursor for use in pagination.
+  """
   cursor: Cursor!
 }
-"""Ordering options for Municipality connections"""
+"""
+Ordering options for Municipality connections
+"""
 input MunicipalityOrder {
-  """The ordering direction."""
+  """
+  The ordering direction.
+  """
   direction: OrderDirection! = ASC
-  """The field by which to order Municipalities."""
+  """
+  The field by which to order Municipalities.
+  """
   field: MunicipalityOrderField!
 }
-"""Properties by which Municipality connections can be ordered."""
+"""
+Properties by which Municipality connections can be ordered.
+"""
 enum MunicipalityOrderField {
   NAME
   CREATED_AT
@@ -238,7 +366,9 @@ input MunicipalityWhereInput {
   not: MunicipalityWhereInput
   and: [MunicipalityWhereInput!]
   or: [MunicipalityWhereInput!]
-  """id field predicates"""
+  """
+  id field predicates
+  """
   id: ID
   idNEQ: ID
   idIn: [ID!]
@@ -247,7 +377,9 @@ input MunicipalityWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
-  """name field predicates"""
+  """
+  name field predicates
+  """
   name: String
   nameNEQ: String
   nameIn: [String!]
@@ -261,7 +393,9 @@ input MunicipalityWhereInput {
   nameHasSuffix: String
   nameEqualFold: String
   nameContainsFold: String
-  """created_at field predicates"""
+  """
+  created_at field predicates
+  """
   createdAt: Time
   createdAtNEQ: Time
   createdAtIn: [Time!]
@@ -270,7 +404,9 @@ input MunicipalityWhereInput {
   createdAtGTE: Time
   createdAtLT: Time
   createdAtLTE: Time
-  """meshis edge predicates"""
+  """
+  meshis edge predicates
+  """
   hasMeshis: Boolean
   hasMeshisWith: [MeshiWhereInput!]
 }
@@ -278,15 +414,24 @@ input MunicipalityWhereInput {
 An object with an ID.
 Follows the [Relay Global Object Identification Specification](https://relay.dev/graphql/objectidentification.htm)
 """
-interface Node @goModel(model: "github.com/shimabukuromeg/ageage-search/ent.Noder") {
-  """The id of the object."""
+interface Node
+  @goModel(model: "github.com/shimabukuromeg/ageage-search/ent.Noder") {
+  """
+  The id of the object.
+  """
   id: ID!
 }
-"""Possible directions in which to order a list of items when provided an `orderBy` argument."""
+"""
+Possible directions in which to order a list of items when provided an `orderBy` argument.
+"""
 enum OrderDirection {
-  """Specifies an ascending order for a given `orderBy` argument."""
+  """
+  Specifies an ascending order for a given `orderBy` argument.
+  """
   ASC
-  """Specifies a descending order for a given `orderBy` argument."""
+  """
+  Specifies a descending order for a given `orderBy` argument.
+  """
   DESC
 }
 """
@@ -294,64 +439,112 @@ Information about pagination in a connection.
 https://relay.dev/graphql/connections.htm#sec-undefined.PageInfo
 """
 type PageInfo {
-  """When paginating forwards, are there more items?"""
+  """
+  When paginating forwards, are there more items?
+  """
   hasNextPage: Boolean!
-  """When paginating backwards, are there more items?"""
+  """
+  When paginating backwards, are there more items?
+  """
   hasPreviousPage: Boolean!
-  """When paginating backwards, the cursor to continue."""
+  """
+  When paginating backwards, the cursor to continue.
+  """
   startCursor: Cursor
-  """When paginating forwards, the cursor to continue."""
+  """
+  When paginating forwards, the cursor to continue.
+  """
   endCursor: Cursor
 }
 type Query {
-  """Fetches an object given its ID."""
+  """
+  Fetches an object given its ID.
+  """
   node(
-    """ID of the object."""
+    """
+    ID of the object.
+    """
     id: ID!
   ): Node
-  """Lookup nodes by a list of IDs."""
+  """
+  Lookup nodes by a list of IDs.
+  """
   nodes(
-    """The list of node IDs."""
+    """
+    The list of node IDs.
+    """
     ids: [ID!]!
   ): [Node]!
+  """
+  アゲアゲめしリスト
+  """
   meshis(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for Meshis returned from the connection."""
+    """
+    Ordering options for Meshis returned from the connection.
+    """
     orderBy: MeshiOrder
 
-    """Filtering options for Meshis returned from the connection."""
+    """
+    Filtering options for Meshis returned from the connection.
+    """
     where: MeshiWhereInput
   ): MeshiConnection!
+  """
+  市町村リスト
+  """
   municipalities(
-    """Returns the elements in the list that come after the specified cursor."""
+    """
+    Returns the elements in the list that come after the specified cursor.
+    """
     after: Cursor
 
-    """Returns the first _n_ elements from the list."""
+    """
+    Returns the first _n_ elements from the list.
+    """
     first: Int
 
-    """Returns the elements in the list that come before the specified cursor."""
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
     before: Cursor
 
-    """Returns the last _n_ elements from the list."""
+    """
+    Returns the last _n_ elements from the list.
+    """
     last: Int
 
-    """Ordering options for Municipalities returned from the connection."""
+    """
+    Ordering options for Municipalities returned from the connection.
+    """
     orderBy: MunicipalityOrder
 
-    """Filtering options for Municipalities returned from the connection."""
+    """
+    Filtering options for Municipalities returned from the connection.
+    """
     where: MunicipalityWhereInput
   ): MunicipalityConnection!
 }
-"""The builtin Time type"""
+"""
+The builtin Time type
+"""
 scalar Time
