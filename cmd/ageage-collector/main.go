@@ -146,16 +146,21 @@ func SetupDB(dbType, dsn string) (*ent.Client, error) {
 }
 
 func GetMunicipality(address string) (string, error) {
-	r := regexp.MustCompile(`沖縄県([^市町村]*?[市町村])`)
+	r := regexp.MustCompile(`(沖縄県)?([^市町村]*郡)?([^市町村]*?[市町村])`)
 	match := r.FindStringSubmatch(address)
-	if len(match) > 1 {
-		return match[1], nil // 市町村名を返す
+	if len(match) > 3 {
+		return match[3], nil // 市町村名を返す
 	}
 	return "", fmt.Errorf("unable to find municipality in: %s", address)
 }
 
 func CreateMunicipality(ctx context.Context, client *ent.Client, article *Article) (*ent.Municipality, error) {
-	name, err := GetMunicipality(article.Address)
+	_, address, err := GetPostalAndAddress(article.Address)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	name, err := GetMunicipality(address)
 	if err != nil {
 		return nil, fmt.Errorf("failed getting municipalityName: %w", err)
 	}
@@ -180,11 +185,25 @@ func CreateMunicipality(ctx context.Context, client *ent.Client, article *Articl
 	return createdMunicipality, nil
 }
 
+func GetPostalAndAddress(fullAddress string) (string, string, error) {
+	r := regexp.MustCompile(`〒([0-9]{3})-([0-9]{4})\s?(.*)`)
+	match := r.FindStringSubmatch(fullAddress)
+	if len(match) > 3 {
+		postalCode := match[1] + match[2]      // Postal code
+		address := strings.TrimSpace(match[3]) // Address
+		return postalCode, address, nil
+	}
+	return "", "", fmt.Errorf("unable to find postal code and address in: %s", fullAddress)
+}
+
 func CreateMeshiAndMunicipality(ctx context.Context, client *ent.Client, article *Article) (*ent.Meshi, error) {
 
-	// article.Address には〒901-0242　沖縄県豊見城市高安576-1 が入っているので住所だけし抽出する
-	newAddress := strings.Replace(article.Address, "　", " ", -1)
-	address := strings.Split(newAddress, " ")[1]
+	postal, address, err := GetPostalAndAddress(article.Address)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println(postal, address)
+	}
 	location, err := GetLatLng(address)
 	if err != nil {
 		return nil, fmt.Errorf("fail get latlng: %w", err)
