@@ -30,6 +30,12 @@ $ ./ageage-collector
 
 If you specify -t postgres but do not specify -d or DSN, the tool will prompt you to provide the PostgreSQL connection information.
 
+```bash
+# options
+$ ./ageage-collector -target all
+$ ./ageage-collector -isCreateSchema true
+```
+
 ### GraphQL Access
 
 The scraped data can be accessed via a GraphQL interface. The server can be started with the following command:
