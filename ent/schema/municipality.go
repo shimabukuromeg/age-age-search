@@ -18,11 +18,11 @@ type Municipality struct {
 // Fields of the Municipality.
 func (Municipality) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("name").
+		field.Text("name").
 			Unique().Annotations(
 			entgql.OrderField("NAME"),
 		),
-		field.String("zipcode").
+		field.Text("zipcode").
 			Unique().Annotations(
 			entgql.OrderField("ZIPCODE"),
 		).Optional(),

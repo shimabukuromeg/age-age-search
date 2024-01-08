@@ -129,11 +129,13 @@ func FindArticles(siteURL string) ([]Article, error) {
 var dbType string
 var dsn string
 var target string
+var isCreateSchema bool
 
 func init() {
 	flag.StringVar(&dbType, "t", "sqlite3", "Type of DB (sqlite or postgres)")
 	flag.StringVar(&dsn, "d", "file:database.sqlite?_fk=1", "Database Data Source Name")
 	flag.StringVar(&target, "target", "first", "target page (all or first)")
+	flag.BoolVar(&isCreateSchema, "isCreateSchema", false, "execute client.Schema.Create")
 	flag.Parse()
 
 	if os.Getenv("DSN") != "" {
@@ -146,7 +148,7 @@ func init() {
 	}
 }
 
-func SetupDB(dbType, dsn string) (*ent.Client, error) {
+func SetupDB(dbType, dsn string, isCreateSchema bool) (*ent.Client, error) {
 	if dbType != "sqlite3" && dbType != "postgres" {
 		return nil, fmt.Errorf("invalid dbType: %s", dbType)
 	}
@@ -154,8 +156,10 @@ func SetupDB(dbType, dsn string) (*ent.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := client.Schema.Create(context.Background()); err != nil {
-		log.Fatalf("failed creating schema resources: %v", err)
+	if isCreateSchema {
+		if err := client.Schema.Create(context.Background()); err != nil {
+			log.Fatalf("failed creating schema resources: %v", err)
+		}
 	}
 
 	return client, nil
@@ -331,7 +335,7 @@ func GetLatLng(address string) (Location, error) {
 
 func main() {
 	flag.Parse()
-	client, err := SetupDB(dbType, dsn)
+	client, err := SetupDB(dbType, dsn, isCreateSchema)
 	if err != nil {
 		log.Fatal(err)
 	}
