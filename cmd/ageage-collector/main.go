@@ -17,7 +17,6 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/shimabukuromeg/ageage-search/ent"
 	"github.com/shimabukuromeg/ageage-search/ent/meshi"
-	"github.com/shimabukuromeg/ageage-search/ent/migrate"
 	"github.com/shimabukuromeg/ageage-search/ent/municipality"
 
 	_ "github.com/lib/pq"
@@ -50,6 +49,23 @@ type GeoCodeResponse struct {
 type Location struct {
 	Latitude  float64
 	Longitude float64
+}
+
+type ZipcloudResponse struct {
+	Message string            `json:"message"`
+	Results []ZipcloudAddress `json:"results"`
+	Status  int               `json:"status"`
+}
+
+type ZipcloudAddress struct {
+	Address1 string `json:"address1"`
+	Address2 string `json:"address2"`
+	Address3 string `json:"address3"`
+	Kana1    string `json:"kana1"`
+	Kana2    string `json:"kana2"`
+	Kana3    string `json:"kana3"`
+	PrefCode string `json:"prefcode"`
+	Zipcode  string `json:"zipcode"`
 }
 
 func FindStoreAndAddress(siteURL string) (string, string, error) {
@@ -138,29 +154,48 @@ func SetupDB(dbType, dsn string) (*ent.Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := client.Schema.Create(context.Background(), migrate.WithGlobalUniqueID(true)); err != nil {
-		log.Fatalf("failed creating schema resources: %v", err)
-	}
+	// if err := client.Schema.Create(context.Background(), migrate.WithGlobalUniqueID(true)); err != nil {
+	// 	log.Fatalf("failed creating schema resources: %v", err)
+	// }
 
 	return client, nil
 }
 
-func GetMunicipality(address string) (string, error) {
-	r := regexp.MustCompile(`(沖縄県)?([^市町村]*郡)?([^市町村]*?[市町村])`)
-	match := r.FindStringSubmatch(address)
-	if len(match) > 3 {
-		return match[3], nil // 市町村名を返す
+func GetMunicipalityByZipcode(zipcode string) (string, error) {
+	baseUrl := "https://zipcloud.ibsnet.co.jp/api/search?zipcode="
+	resp, err := http.Get(baseUrl + zipcode)
+	if err != nil {
+		return "", fmt.Errorf("failed getting response from zipcloud.ibsnet.co.jp: %w", err)
 	}
-	return "", fmt.Errorf("unable to find municipality in: %s", address)
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("fail ioutil.ReadAll : %v", err)
+	}
+
+	// レスポンスを構造体にマッピング
+	var response ZipcloudResponse
+	err = json.Unmarshal(body, &response)
+	if err != nil {
+		return "", fmt.Errorf("fail Unmarshal : %v", err)
+	}
+
+	if len(response.Results[0].Address2) == 0 {
+		return "", fmt.Errorf("no result found for result: %s", response.Results[0])
+	}
+
+	return response.Results[0].Address2, nil
 }
 
 func CreateMunicipality(ctx context.Context, client *ent.Client, article *Article) (*ent.Municipality, error) {
-	_, address, err := GetPostalAndAddress(article.Address)
+	zipCode, _, err := GetZipcodeAndAddress(article.Address)
+	fmt.Printf("zipCode: %s\n", zipCode)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	name, err := GetMunicipality(address)
+	name, err := GetMunicipalityByZipcode(zipCode)
 	if err != nil {
 		return nil, fmt.Errorf("failed getting municipalityName: %w", err)
 	}
@@ -185,24 +220,24 @@ func CreateMunicipality(ctx context.Context, client *ent.Client, article *Articl
 	return createdMunicipality, nil
 }
 
-func GetPostalAndAddress(fullAddress string) (string, string, error) {
+func GetZipcodeAndAddress(fullAddress string) (string, string, error) {
 	r := regexp.MustCompile(`〒([0-9]{3})-([0-9]{4})\s?(.*)`)
 	match := r.FindStringSubmatch(fullAddress)
 	if len(match) > 3 {
-		postalCode := match[1] + match[2]      // Postal code
+		zipCode := match[1] + match[2]         // Postal code
 		address := strings.TrimSpace(match[3]) // Address
-		return postalCode, address, nil
+		return zipCode, address, nil
 	}
 	return "", "", fmt.Errorf("unable to find postal code and address in: %s", fullAddress)
 }
 
 func CreateMeshiAndMunicipality(ctx context.Context, client *ent.Client, article *Article) (*ent.Meshi, error) {
 
-	postal, address, err := GetPostalAndAddress(article.Address)
+	zipCode, address, err := GetZipcodeAndAddress(article.Address)
 	if err != nil {
 		fmt.Println(err)
 	} else {
-		fmt.Println(postal, address)
+		fmt.Println(zipCode, address)
 	}
 	location, err := GetLatLng(address)
 	if err != nil {
