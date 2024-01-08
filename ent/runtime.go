@@ -43,7 +43,7 @@ func init() {
 	municipalityFields := schema.Municipality{}.Fields()
 	_ = municipalityFields
 	// municipalityDescCreatedAt is the schema descriptor for created_at field.
-	municipalityDescCreatedAt := municipalityFields[1].Descriptor()
+	municipalityDescCreatedAt := municipalityFields[2].Descriptor()
 	// municipality.DefaultCreatedAt holds the default value on creation for the created_at field.
 	municipality.DefaultCreatedAt = municipalityDescCreatedAt.Default.(func() time.Time)
 }

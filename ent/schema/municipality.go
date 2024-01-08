@@ -22,6 +22,10 @@ func (Municipality) Fields() []ent.Field {
 			Unique().Annotations(
 			entgql.OrderField("NAME"),
 		),
+		field.String("zipcode").
+			Unique().Annotations(
+			entgql.OrderField("ZIPCODE"),
+		).Optional(),
 		field.Time("created_at").
 			Default(time.Now).Annotations(
 			entgql.OrderField("CREATED_AT"),

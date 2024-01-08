@@ -778,6 +778,20 @@ var (
 			}
 		},
 	}
+	// MunicipalityOrderFieldZipcode orders Municipality by zipcode.
+	MunicipalityOrderFieldZipcode = &MunicipalityOrderField{
+		Value: func(m *Municipality) (ent.Value, error) {
+			return m.Zipcode, nil
+		},
+		column: municipality.FieldZipcode,
+		toTerm: municipality.ByZipcode,
+		toCursor: func(m *Municipality) Cursor {
+			return Cursor{
+				ID:    m.ID,
+				Value: m.Zipcode,
+			}
+		},
+	}
 	// MunicipalityOrderFieldCreatedAt orders Municipality by created_at.
 	MunicipalityOrderFieldCreatedAt = &MunicipalityOrderField{
 		Value: func(m *Municipality) (ent.Value, error) {
@@ -800,6 +814,8 @@ func (f MunicipalityOrderField) String() string {
 	switch f.column {
 	case MunicipalityOrderFieldName.column:
 		str = "NAME"
+	case MunicipalityOrderFieldZipcode.column:
+		str = "ZIPCODE"
 	case MunicipalityOrderFieldCreatedAt.column:
 		str = "CREATED_AT"
 	}
@@ -820,6 +836,8 @@ func (f *MunicipalityOrderField) UnmarshalGQL(v interface{}) error {
 	switch str {
 	case "NAME":
 		*f = *MunicipalityOrderFieldName
+	case "ZIPCODE":
+		*f = *MunicipalityOrderFieldZipcode
 	case "CREATED_AT":
 		*f = *MunicipalityOrderFieldCreatedAt
 	default:

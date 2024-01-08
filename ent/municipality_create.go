@@ -29,6 +29,20 @@ func (mc *MunicipalityCreate) SetName(s string) *MunicipalityCreate {
 	return mc
 }
 
+// SetZipcode sets the "zipcode" field.
+func (mc *MunicipalityCreate) SetZipcode(s string) *MunicipalityCreate {
+	mc.mutation.SetZipcode(s)
+	return mc
+}
+
+// SetNillableZipcode sets the "zipcode" field if the given value is not nil.
+func (mc *MunicipalityCreate) SetNillableZipcode(s *string) *MunicipalityCreate {
+	if s != nil {
+		mc.SetZipcode(*s)
+	}
+	return mc
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (mc *MunicipalityCreate) SetCreatedAt(t time.Time) *MunicipalityCreate {
 	mc.mutation.SetCreatedAt(t)
@@ -138,6 +152,10 @@ func (mc *MunicipalityCreate) createSpec() (*Municipality, *sqlgraph.CreateSpec)
 		_spec.SetField(municipality.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
+	if value, ok := mc.mutation.Zipcode(); ok {
+		_spec.SetField(municipality.FieldZipcode, field.TypeString, value)
+		_node.Zipcode = value
+	}
 	if value, ok := mc.mutation.CreatedAt(); ok {
 		_spec.SetField(municipality.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
@@ -222,6 +240,24 @@ func (u *MunicipalityUpsert) UpdateName() *MunicipalityUpsert {
 	return u
 }
 
+// SetZipcode sets the "zipcode" field.
+func (u *MunicipalityUpsert) SetZipcode(v string) *MunicipalityUpsert {
+	u.Set(municipality.FieldZipcode, v)
+	return u
+}
+
+// UpdateZipcode sets the "zipcode" field to the value that was provided on create.
+func (u *MunicipalityUpsert) UpdateZipcode() *MunicipalityUpsert {
+	u.SetExcluded(municipality.FieldZipcode)
+	return u
+}
+
+// ClearZipcode clears the value of the "zipcode" field.
+func (u *MunicipalityUpsert) ClearZipcode() *MunicipalityUpsert {
+	u.SetNull(municipality.FieldZipcode)
+	return u
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (u *MunicipalityUpsert) SetCreatedAt(v time.Time) *MunicipalityUpsert {
 	u.Set(municipality.FieldCreatedAt, v)
@@ -285,6 +321,27 @@ func (u *MunicipalityUpsertOne) SetName(v string) *MunicipalityUpsertOne {
 func (u *MunicipalityUpsertOne) UpdateName() *MunicipalityUpsertOne {
 	return u.Update(func(s *MunicipalityUpsert) {
 		s.UpdateName()
+	})
+}
+
+// SetZipcode sets the "zipcode" field.
+func (u *MunicipalityUpsertOne) SetZipcode(v string) *MunicipalityUpsertOne {
+	return u.Update(func(s *MunicipalityUpsert) {
+		s.SetZipcode(v)
+	})
+}
+
+// UpdateZipcode sets the "zipcode" field to the value that was provided on create.
+func (u *MunicipalityUpsertOne) UpdateZipcode() *MunicipalityUpsertOne {
+	return u.Update(func(s *MunicipalityUpsert) {
+		s.UpdateZipcode()
+	})
+}
+
+// ClearZipcode clears the value of the "zipcode" field.
+func (u *MunicipalityUpsertOne) ClearZipcode() *MunicipalityUpsertOne {
+	return u.Update(func(s *MunicipalityUpsert) {
+		s.ClearZipcode()
 	})
 }
 
@@ -513,6 +570,27 @@ func (u *MunicipalityUpsertBulk) SetName(v string) *MunicipalityUpsertBulk {
 func (u *MunicipalityUpsertBulk) UpdateName() *MunicipalityUpsertBulk {
 	return u.Update(func(s *MunicipalityUpsert) {
 		s.UpdateName()
+	})
+}
+
+// SetZipcode sets the "zipcode" field.
+func (u *MunicipalityUpsertBulk) SetZipcode(v string) *MunicipalityUpsertBulk {
+	return u.Update(func(s *MunicipalityUpsert) {
+		s.SetZipcode(v)
+	})
+}
+
+// UpdateZipcode sets the "zipcode" field to the value that was provided on create.
+func (u *MunicipalityUpsertBulk) UpdateZipcode() *MunicipalityUpsertBulk {
+	return u.Update(func(s *MunicipalityUpsert) {
+		s.UpdateZipcode()
+	})
+}
+
+// ClearZipcode clears the value of the "zipcode" field.
+func (u *MunicipalityUpsertBulk) ClearZipcode() *MunicipalityUpsertBulk {
+	return u.Update(func(s *MunicipalityUpsert) {
+		s.ClearZipcode()
 	})
 }
 

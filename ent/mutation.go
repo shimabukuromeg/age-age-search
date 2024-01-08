@@ -984,6 +984,7 @@ type MunicipalityMutation struct {
 	typ           string
 	id            *int
 	name          *string
+	zipcode       *string
 	created_at    *time.Time
 	clearedFields map[string]struct{}
 	meshis        map[int]struct{}
@@ -1128,6 +1129,55 @@ func (m *MunicipalityMutation) ResetName() {
 	m.name = nil
 }
 
+// SetZipcode sets the "zipcode" field.
+func (m *MunicipalityMutation) SetZipcode(s string) {
+	m.zipcode = &s
+}
+
+// Zipcode returns the value of the "zipcode" field in the mutation.
+func (m *MunicipalityMutation) Zipcode() (r string, exists bool) {
+	v := m.zipcode
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldZipcode returns the old "zipcode" field's value of the Municipality entity.
+// If the Municipality object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *MunicipalityMutation) OldZipcode(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldZipcode is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldZipcode requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldZipcode: %w", err)
+	}
+	return oldValue.Zipcode, nil
+}
+
+// ClearZipcode clears the value of the "zipcode" field.
+func (m *MunicipalityMutation) ClearZipcode() {
+	m.zipcode = nil
+	m.clearedFields[municipality.FieldZipcode] = struct{}{}
+}
+
+// ZipcodeCleared returns if the "zipcode" field was cleared in this mutation.
+func (m *MunicipalityMutation) ZipcodeCleared() bool {
+	_, ok := m.clearedFields[municipality.FieldZipcode]
+	return ok
+}
+
+// ResetZipcode resets all changes to the "zipcode" field.
+func (m *MunicipalityMutation) ResetZipcode() {
+	m.zipcode = nil
+	delete(m.clearedFields, municipality.FieldZipcode)
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (m *MunicipalityMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -1252,9 +1302,12 @@ func (m *MunicipalityMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *MunicipalityMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 3)
 	if m.name != nil {
 		fields = append(fields, municipality.FieldName)
+	}
+	if m.zipcode != nil {
+		fields = append(fields, municipality.FieldZipcode)
 	}
 	if m.created_at != nil {
 		fields = append(fields, municipality.FieldCreatedAt)
@@ -1269,6 +1322,8 @@ func (m *MunicipalityMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case municipality.FieldName:
 		return m.Name()
+	case municipality.FieldZipcode:
+		return m.Zipcode()
 	case municipality.FieldCreatedAt:
 		return m.CreatedAt()
 	}
@@ -1282,6 +1337,8 @@ func (m *MunicipalityMutation) OldField(ctx context.Context, name string) (ent.V
 	switch name {
 	case municipality.FieldName:
 		return m.OldName(ctx)
+	case municipality.FieldZipcode:
+		return m.OldZipcode(ctx)
 	case municipality.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	}
@@ -1299,6 +1356,13 @@ func (m *MunicipalityMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetName(v)
+		return nil
+	case municipality.FieldZipcode:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetZipcode(v)
 		return nil
 	case municipality.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -1336,7 +1400,11 @@ func (m *MunicipalityMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *MunicipalityMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(municipality.FieldZipcode) {
+		fields = append(fields, municipality.FieldZipcode)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -1349,6 +1417,11 @@ func (m *MunicipalityMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *MunicipalityMutation) ClearField(name string) error {
+	switch name {
+	case municipality.FieldZipcode:
+		m.ClearZipcode()
+		return nil
+	}
 	return fmt.Errorf("unknown Municipality nullable field %s", name)
 }
 
@@ -1358,6 +1431,9 @@ func (m *MunicipalityMutation) ResetField(name string) error {
 	switch name {
 	case municipality.FieldName:
 		m.ResetName()
+		return nil
+	case municipality.FieldZipcode:
+		m.ResetZipcode()
 		return nil
 	case municipality.FieldCreatedAt:
 		m.ResetCreatedAt()

@@ -19,6 +19,8 @@ type Municipality struct {
 	ID int `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
+	// Zipcode holds the value of the "zipcode" field.
+	Zipcode string `json:"zipcode,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -56,7 +58,7 @@ func (*Municipality) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case municipality.FieldID:
 			values[i] = new(sql.NullInt64)
-		case municipality.FieldName:
+		case municipality.FieldName, municipality.FieldZipcode:
 			values[i] = new(sql.NullString)
 		case municipality.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -86,6 +88,12 @@ func (m *Municipality) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
 				m.Name = value.String
+			}
+		case municipality.FieldZipcode:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field zipcode", values[i])
+			} else if value.Valid {
+				m.Zipcode = value.String
 			}
 		case municipality.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -136,6 +144,9 @@ func (m *Municipality) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", m.ID))
 	builder.WriteString("name=")
 	builder.WriteString(m.Name)
+	builder.WriteString(", ")
+	builder.WriteString("zipcode=")
+	builder.WriteString(m.Zipcode)
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(m.CreatedAt.Format(time.ANSIC))

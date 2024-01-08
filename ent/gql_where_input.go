@@ -650,6 +650,23 @@ type MunicipalityWhereInput struct {
 	NameEqualFold    *string  `json:"nameEqualFold,omitempty"`
 	NameContainsFold *string  `json:"nameContainsFold,omitempty"`
 
+	// "zipcode" field predicates.
+	Zipcode             *string  `json:"zipcode,omitempty"`
+	ZipcodeNEQ          *string  `json:"zipcodeNEQ,omitempty"`
+	ZipcodeIn           []string `json:"zipcodeIn,omitempty"`
+	ZipcodeNotIn        []string `json:"zipcodeNotIn,omitempty"`
+	ZipcodeGT           *string  `json:"zipcodeGT,omitempty"`
+	ZipcodeGTE          *string  `json:"zipcodeGTE,omitempty"`
+	ZipcodeLT           *string  `json:"zipcodeLT,omitempty"`
+	ZipcodeLTE          *string  `json:"zipcodeLTE,omitempty"`
+	ZipcodeContains     *string  `json:"zipcodeContains,omitempty"`
+	ZipcodeHasPrefix    *string  `json:"zipcodeHasPrefix,omitempty"`
+	ZipcodeHasSuffix    *string  `json:"zipcodeHasSuffix,omitempty"`
+	ZipcodeIsNil        bool     `json:"zipcodeIsNil,omitempty"`
+	ZipcodeNotNil       bool     `json:"zipcodeNotNil,omitempty"`
+	ZipcodeEqualFold    *string  `json:"zipcodeEqualFold,omitempty"`
+	ZipcodeContainsFold *string  `json:"zipcodeContainsFold,omitempty"`
+
 	// "created_at" field predicates.
 	CreatedAt      *time.Time  `json:"createdAt,omitempty"`
 	CreatedAtNEQ   *time.Time  `json:"createdAtNEQ,omitempty"`
@@ -798,6 +815,51 @@ func (i *MunicipalityWhereInput) P() (predicate.Municipality, error) {
 	}
 	if i.NameContainsFold != nil {
 		predicates = append(predicates, municipality.NameContainsFold(*i.NameContainsFold))
+	}
+	if i.Zipcode != nil {
+		predicates = append(predicates, municipality.ZipcodeEQ(*i.Zipcode))
+	}
+	if i.ZipcodeNEQ != nil {
+		predicates = append(predicates, municipality.ZipcodeNEQ(*i.ZipcodeNEQ))
+	}
+	if len(i.ZipcodeIn) > 0 {
+		predicates = append(predicates, municipality.ZipcodeIn(i.ZipcodeIn...))
+	}
+	if len(i.ZipcodeNotIn) > 0 {
+		predicates = append(predicates, municipality.ZipcodeNotIn(i.ZipcodeNotIn...))
+	}
+	if i.ZipcodeGT != nil {
+		predicates = append(predicates, municipality.ZipcodeGT(*i.ZipcodeGT))
+	}
+	if i.ZipcodeGTE != nil {
+		predicates = append(predicates, municipality.ZipcodeGTE(*i.ZipcodeGTE))
+	}
+	if i.ZipcodeLT != nil {
+		predicates = append(predicates, municipality.ZipcodeLT(*i.ZipcodeLT))
+	}
+	if i.ZipcodeLTE != nil {
+		predicates = append(predicates, municipality.ZipcodeLTE(*i.ZipcodeLTE))
+	}
+	if i.ZipcodeContains != nil {
+		predicates = append(predicates, municipality.ZipcodeContains(*i.ZipcodeContains))
+	}
+	if i.ZipcodeHasPrefix != nil {
+		predicates = append(predicates, municipality.ZipcodeHasPrefix(*i.ZipcodeHasPrefix))
+	}
+	if i.ZipcodeHasSuffix != nil {
+		predicates = append(predicates, municipality.ZipcodeHasSuffix(*i.ZipcodeHasSuffix))
+	}
+	if i.ZipcodeIsNil {
+		predicates = append(predicates, municipality.ZipcodeIsNil())
+	}
+	if i.ZipcodeNotNil {
+		predicates = append(predicates, municipality.ZipcodeNotNil())
+	}
+	if i.ZipcodeEqualFold != nil {
+		predicates = append(predicates, municipality.ZipcodeEqualFold(*i.ZipcodeEqualFold))
+	}
+	if i.ZipcodeContainsFold != nil {
+		predicates = append(predicates, municipality.ZipcodeContainsFold(*i.ZipcodeContainsFold))
 	}
 	if i.CreatedAt != nil {
 		predicates = append(predicates, municipality.CreatedAtEQ(*i.CreatedAt))

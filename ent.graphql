@@ -199,6 +199,7 @@ input MeshiWhereInput {
 type Municipality implements Node {
   id: ID!
   name: String!
+  zipcode: String
   createdAt: Time!
   meshis(
     """Returns the elements in the list that come after the specified cursor."""
@@ -246,6 +247,7 @@ input MunicipalityOrder {
 """Properties by which Municipality connections can be ordered."""
 enum MunicipalityOrderField {
   NAME
+  ZIPCODE
   CREATED_AT
 }
 """
@@ -279,6 +281,22 @@ input MunicipalityWhereInput {
   nameHasSuffix: String
   nameEqualFold: String
   nameContainsFold: String
+  """zipcode field predicates"""
+  zipcode: String
+  zipcodeNEQ: String
+  zipcodeIn: [String!]
+  zipcodeNotIn: [String!]
+  zipcodeGT: String
+  zipcodeGTE: String
+  zipcodeLT: String
+  zipcodeLTE: String
+  zipcodeContains: String
+  zipcodeHasPrefix: String
+  zipcodeHasSuffix: String
+  zipcodeIsNil: Boolean
+  zipcodeNotNil: Boolean
+  zipcodeEqualFold: String
+  zipcodeContainsFold: String
   """created_at field predicates"""
   createdAt: Time
   createdAtNEQ: Time

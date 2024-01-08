@@ -16,6 +16,8 @@ const (
 	FieldID = "id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
+	// FieldZipcode holds the string denoting the zipcode field in the database.
+	FieldZipcode = "zipcode"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// EdgeMeshis holds the string denoting the meshis edge name in mutations.
@@ -35,6 +37,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldName,
+	FieldZipcode,
 	FieldCreatedAt,
 }
 
@@ -64,6 +67,11 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByName orders the results by the name field.
 func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
+}
+
+// ByZipcode orders the results by the zipcode field.
+func ByZipcode(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldZipcode, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

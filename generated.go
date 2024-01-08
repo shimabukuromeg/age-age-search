@@ -77,6 +77,7 @@ type ComplexityRoot struct {
 		ID        func(childComplexity int) int
 		Meshis    func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.MeshiOrder, where *ent.MeshiWhereInput) int
 		Name      func(childComplexity int) int
+		Zipcode   func(childComplexity int) int
 	}
 
 	MunicipalityConnection struct {
@@ -278,6 +279,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Municipality.Name(childComplexity), true
+
+	case "Municipality.zipcode":
+		if e.complexity.Municipality.Zipcode == nil {
+			break
+		}
+
+		return e.complexity.Municipality.Zipcode(childComplexity), true
 
 	case "MunicipalityConnection.edges":
 		if e.complexity.MunicipalityConnection.Edges == nil {
@@ -1290,6 +1298,8 @@ func (ec *executionContext) fieldContext_Meshi_municipality(ctx context.Context,
 				return ec.fieldContext_Municipality_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Municipality_name(ctx, field)
+			case "zipcode":
+				return ec.fieldContext_Municipality_zipcode(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Municipality_createdAt(ctx, field)
 			case "meshis":
@@ -1645,6 +1655,47 @@ func (ec *executionContext) fieldContext_Municipality_name(ctx context.Context, 
 	return fc, nil
 }
 
+func (ec *executionContext) _Municipality_zipcode(ctx context.Context, field graphql.CollectedField, obj *ent.Municipality) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Municipality_zipcode(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Zipcode, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalOString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Municipality_zipcode(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Municipality",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Municipality_createdAt(ctx context.Context, field graphql.CollectedField, obj *ent.Municipality) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Municipality_createdAt(ctx, field)
 	if err != nil {
@@ -1937,6 +1988,8 @@ func (ec *executionContext) fieldContext_MunicipalityEdge_node(ctx context.Conte
 				return ec.fieldContext_Municipality_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Municipality_name(ctx, field)
+			case "zipcode":
+				return ec.fieldContext_Municipality_zipcode(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Municipality_createdAt(ctx, field)
 			case "meshis":
@@ -5515,7 +5568,7 @@ func (ec *executionContext) unmarshalInputMunicipalityWhereInput(ctx context.Con
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "hasMeshis", "hasMeshisWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "zipcode", "zipcodeNEQ", "zipcodeIn", "zipcodeNotIn", "zipcodeGT", "zipcodeGTE", "zipcodeLT", "zipcodeLTE", "zipcodeContains", "zipcodeHasPrefix", "zipcodeHasSuffix", "zipcodeIsNil", "zipcodeNotNil", "zipcodeEqualFold", "zipcodeContainsFold", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "hasMeshis", "hasMeshisWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -5738,6 +5791,141 @@ func (ec *executionContext) unmarshalInputMunicipalityWhereInput(ctx context.Con
 				return it, err
 			}
 			it.NameContainsFold = data
+		case "zipcode":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("zipcode"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Zipcode = data
+		case "zipcodeNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("zipcodeNEQ"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ZipcodeNEQ = data
+		case "zipcodeIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("zipcodeIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ZipcodeIn = data
+		case "zipcodeNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("zipcodeNotIn"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ZipcodeNotIn = data
+		case "zipcodeGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("zipcodeGT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ZipcodeGT = data
+		case "zipcodeGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("zipcodeGTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ZipcodeGTE = data
+		case "zipcodeLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("zipcodeLT"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ZipcodeLT = data
+		case "zipcodeLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("zipcodeLTE"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ZipcodeLTE = data
+		case "zipcodeContains":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("zipcodeContains"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ZipcodeContains = data
+		case "zipcodeHasPrefix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("zipcodeHasPrefix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ZipcodeHasPrefix = data
+		case "zipcodeHasSuffix":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("zipcodeHasSuffix"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ZipcodeHasSuffix = data
+		case "zipcodeIsNil":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("zipcodeIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ZipcodeIsNil = data
+		case "zipcodeNotNil":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("zipcodeNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ZipcodeNotNil = data
+		case "zipcodeEqualFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("zipcodeEqualFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ZipcodeEqualFold = data
+		case "zipcodeContainsFold":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("zipcodeContainsFold"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ZipcodeContainsFold = data
 		case "createdAt":
 			var err error
 
@@ -6091,6 +6279,8 @@ func (ec *executionContext) _Municipality(ctx context.Context, sel ast.Selection
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "zipcode":
+			out.Values[i] = ec._Municipality_zipcode(ctx, field, obj)
 		case "createdAt":
 			out.Values[i] = ec._Municipality_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -7611,6 +7801,16 @@ func (ec *executionContext) marshalONode2githubᚗcomᚋshimabukuromegᚋageage�
 		return graphql.Null
 	}
 	return ec._Node(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
+	res, err := graphql.UnmarshalString(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	res := graphql.MarshalString(v)
+	return res
 }
 
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {

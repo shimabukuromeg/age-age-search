@@ -203,6 +203,7 @@ func CreateMunicipality(ctx context.Context, client *ent.Client, article *Articl
 	id, err := client.Municipality.
 		Create().
 		SetName(name).
+		SetZipcode(zipCode).
 		OnConflictColumns("name").
 		UpdateNewValues().
 		ID(ctx)
@@ -357,6 +358,7 @@ func main() {
 				Where(meshi.ArticleIDEQ(article.ArticleID)).
 				Only(cxt)
 			if err != nil {
+				// 存在しなかったら追加
 				if ent.IsNotFound(err) {
 					fmt.Println("No Meshi found with this articleID.")
 					// Create a new Meshi and link it to the Municipality.

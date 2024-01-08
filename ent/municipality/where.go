@@ -60,6 +60,11 @@ func Name(v string) predicate.Municipality {
 	return predicate.Municipality(sql.FieldEQ(FieldName, v))
 }
 
+// Zipcode applies equality check predicate on the "zipcode" field. It's identical to ZipcodeEQ.
+func Zipcode(v string) predicate.Municipality {
+	return predicate.Municipality(sql.FieldEQ(FieldZipcode, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Municipality {
 	return predicate.Municipality(sql.FieldEQ(FieldCreatedAt, v))
@@ -128,6 +133,81 @@ func NameEqualFold(v string) predicate.Municipality {
 // NameContainsFold applies the ContainsFold predicate on the "name" field.
 func NameContainsFold(v string) predicate.Municipality {
 	return predicate.Municipality(sql.FieldContainsFold(FieldName, v))
+}
+
+// ZipcodeEQ applies the EQ predicate on the "zipcode" field.
+func ZipcodeEQ(v string) predicate.Municipality {
+	return predicate.Municipality(sql.FieldEQ(FieldZipcode, v))
+}
+
+// ZipcodeNEQ applies the NEQ predicate on the "zipcode" field.
+func ZipcodeNEQ(v string) predicate.Municipality {
+	return predicate.Municipality(sql.FieldNEQ(FieldZipcode, v))
+}
+
+// ZipcodeIn applies the In predicate on the "zipcode" field.
+func ZipcodeIn(vs ...string) predicate.Municipality {
+	return predicate.Municipality(sql.FieldIn(FieldZipcode, vs...))
+}
+
+// ZipcodeNotIn applies the NotIn predicate on the "zipcode" field.
+func ZipcodeNotIn(vs ...string) predicate.Municipality {
+	return predicate.Municipality(sql.FieldNotIn(FieldZipcode, vs...))
+}
+
+// ZipcodeGT applies the GT predicate on the "zipcode" field.
+func ZipcodeGT(v string) predicate.Municipality {
+	return predicate.Municipality(sql.FieldGT(FieldZipcode, v))
+}
+
+// ZipcodeGTE applies the GTE predicate on the "zipcode" field.
+func ZipcodeGTE(v string) predicate.Municipality {
+	return predicate.Municipality(sql.FieldGTE(FieldZipcode, v))
+}
+
+// ZipcodeLT applies the LT predicate on the "zipcode" field.
+func ZipcodeLT(v string) predicate.Municipality {
+	return predicate.Municipality(sql.FieldLT(FieldZipcode, v))
+}
+
+// ZipcodeLTE applies the LTE predicate on the "zipcode" field.
+func ZipcodeLTE(v string) predicate.Municipality {
+	return predicate.Municipality(sql.FieldLTE(FieldZipcode, v))
+}
+
+// ZipcodeContains applies the Contains predicate on the "zipcode" field.
+func ZipcodeContains(v string) predicate.Municipality {
+	return predicate.Municipality(sql.FieldContains(FieldZipcode, v))
+}
+
+// ZipcodeHasPrefix applies the HasPrefix predicate on the "zipcode" field.
+func ZipcodeHasPrefix(v string) predicate.Municipality {
+	return predicate.Municipality(sql.FieldHasPrefix(FieldZipcode, v))
+}
+
+// ZipcodeHasSuffix applies the HasSuffix predicate on the "zipcode" field.
+func ZipcodeHasSuffix(v string) predicate.Municipality {
+	return predicate.Municipality(sql.FieldHasSuffix(FieldZipcode, v))
+}
+
+// ZipcodeIsNil applies the IsNil predicate on the "zipcode" field.
+func ZipcodeIsNil() predicate.Municipality {
+	return predicate.Municipality(sql.FieldIsNull(FieldZipcode))
+}
+
+// ZipcodeNotNil applies the NotNil predicate on the "zipcode" field.
+func ZipcodeNotNil() predicate.Municipality {
+	return predicate.Municipality(sql.FieldNotNull(FieldZipcode))
+}
+
+// ZipcodeEqualFold applies the EqualFold predicate on the "zipcode" field.
+func ZipcodeEqualFold(v string) predicate.Municipality {
+	return predicate.Municipality(sql.FieldEqualFold(FieldZipcode, v))
+}
+
+// ZipcodeContainsFold applies the ContainsFold predicate on the "zipcode" field.
+func ZipcodeContainsFold(v string) predicate.Municipality {
+	return predicate.Municipality(sql.FieldContainsFold(FieldZipcode, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

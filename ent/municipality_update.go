@@ -35,6 +35,26 @@ func (mu *MunicipalityUpdate) SetName(s string) *MunicipalityUpdate {
 	return mu
 }
 
+// SetZipcode sets the "zipcode" field.
+func (mu *MunicipalityUpdate) SetZipcode(s string) *MunicipalityUpdate {
+	mu.mutation.SetZipcode(s)
+	return mu
+}
+
+// SetNillableZipcode sets the "zipcode" field if the given value is not nil.
+func (mu *MunicipalityUpdate) SetNillableZipcode(s *string) *MunicipalityUpdate {
+	if s != nil {
+		mu.SetZipcode(*s)
+	}
+	return mu
+}
+
+// ClearZipcode clears the value of the "zipcode" field.
+func (mu *MunicipalityUpdate) ClearZipcode() *MunicipalityUpdate {
+	mu.mutation.ClearZipcode()
+	return mu
+}
+
 // SetCreatedAt sets the "created_at" field.
 func (mu *MunicipalityUpdate) SetCreatedAt(t time.Time) *MunicipalityUpdate {
 	mu.mutation.SetCreatedAt(t)
@@ -129,6 +149,12 @@ func (mu *MunicipalityUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := mu.mutation.Name(); ok {
 		_spec.SetField(municipality.FieldName, field.TypeString, value)
 	}
+	if value, ok := mu.mutation.Zipcode(); ok {
+		_spec.SetField(municipality.FieldZipcode, field.TypeString, value)
+	}
+	if mu.mutation.ZipcodeCleared() {
+		_spec.ClearField(municipality.FieldZipcode, field.TypeString)
+	}
 	if value, ok := mu.mutation.CreatedAt(); ok {
 		_spec.SetField(municipality.FieldCreatedAt, field.TypeTime, value)
 	}
@@ -200,6 +226,26 @@ type MunicipalityUpdateOne struct {
 // SetName sets the "name" field.
 func (muo *MunicipalityUpdateOne) SetName(s string) *MunicipalityUpdateOne {
 	muo.mutation.SetName(s)
+	return muo
+}
+
+// SetZipcode sets the "zipcode" field.
+func (muo *MunicipalityUpdateOne) SetZipcode(s string) *MunicipalityUpdateOne {
+	muo.mutation.SetZipcode(s)
+	return muo
+}
+
+// SetNillableZipcode sets the "zipcode" field if the given value is not nil.
+func (muo *MunicipalityUpdateOne) SetNillableZipcode(s *string) *MunicipalityUpdateOne {
+	if s != nil {
+		muo.SetZipcode(*s)
+	}
+	return muo
+}
+
+// ClearZipcode clears the value of the "zipcode" field.
+func (muo *MunicipalityUpdateOne) ClearZipcode() *MunicipalityUpdateOne {
+	muo.mutation.ClearZipcode()
 	return muo
 }
 
@@ -326,6 +372,12 @@ func (muo *MunicipalityUpdateOne) sqlSave(ctx context.Context) (_node *Municipal
 	}
 	if value, ok := muo.mutation.Name(); ok {
 		_spec.SetField(municipality.FieldName, field.TypeString, value)
+	}
+	if value, ok := muo.mutation.Zipcode(); ok {
+		_spec.SetField(municipality.FieldZipcode, field.TypeString, value)
+	}
+	if muo.mutation.ZipcodeCleared() {
+		_spec.ClearField(municipality.FieldZipcode, field.TypeString)
 	}
 	if value, ok := muo.mutation.CreatedAt(); ok {
 		_spec.SetField(municipality.FieldCreatedAt, field.TypeTime, value)

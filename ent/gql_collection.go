@@ -268,6 +268,11 @@ func (m *MunicipalityQuery) collectField(ctx context.Context, opCtx *graphql.Ope
 				selectedFields = append(selectedFields, municipality.FieldName)
 				fieldSeen[municipality.FieldName] = struct{}{}
 			}
+		case "zipcode":
+			if _, ok := fieldSeen[municipality.FieldZipcode]; !ok {
+				selectedFields = append(selectedFields, municipality.FieldZipcode)
+				fieldSeen[municipality.FieldZipcode] = struct{}{}
+			}
 		case "createdAt":
 			if _, ok := fieldSeen[municipality.FieldCreatedAt]; !ok {
 				selectedFields = append(selectedFields, municipality.FieldCreatedAt)

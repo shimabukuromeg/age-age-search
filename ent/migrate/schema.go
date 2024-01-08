@@ -41,6 +41,7 @@ var (
 	MunicipalitiesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "zipcode", Type: field.TypeString, Unique: true, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 	}
 	// MunicipalitiesTable holds the schema information for the "municipalities" table.
