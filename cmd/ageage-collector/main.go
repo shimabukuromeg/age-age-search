@@ -68,6 +68,15 @@ type ZipcloudAddress struct {
 	Zipcode  string `json:"zipcode"`
 }
 
+type ExtendError struct {
+	Message string
+	Code    string
+}
+
+func (e *ExtendError) Error() string {
+	return fmt.Sprintf("code=%s, message=%s", e.Code, e.Message)
+}
+
 func FindStoreAndAddress(siteURL string) (string, string, error) {
 	// goqueryでURLからDOMオブジェクトを取得する
 	doc, err := goquery.NewDocument(siteURL)
@@ -165,6 +174,15 @@ func SetupDB(dbType, dsn string, isCreateSchema bool) (*ent.Client, error) {
 	return client, nil
 }
 
+func GetMunicipalityByAddress(address string) (string, error) {
+	r := regexp.MustCompile(`(沖縄県)?([^市町村]*郡)?([^市町村]*?[市町村])`)
+	match := r.FindStringSubmatch(address)
+	if len(match) > 3 {
+		return match[3], nil // 市町村名を返す
+	}
+	return "", fmt.Errorf("unable to find municipality in: %s", address)
+}
+
 func GetMunicipalityByZipcode(zipcode string) (string, error) {
 	baseUrl := "https://zipcloud.ibsnet.co.jp/api/search?zipcode="
 	resp, err := http.Get(baseUrl + zipcode)
@@ -185,6 +203,10 @@ func GetMunicipalityByZipcode(zipcode string) (string, error) {
 		return "", fmt.Errorf("fail Unmarshal : %v", err)
 	}
 
+	if response.Results == nil {
+		return "", &ExtendError{"resultsの結果がnullです", "zipcode-not-found"}
+	}
+
 	if len(response.Results[0].Address2) == 0 {
 		return "", fmt.Errorf("no result found for result: %s", response.Results[0])
 	}
@@ -192,16 +214,32 @@ func GetMunicipalityByZipcode(zipcode string) (string, error) {
 	return response.Results[0].Address2, nil
 }
 
+func GetPostalAndAddress(fullAddress string) (string, string, error) {
+	r := regexp.MustCompile(`〒([0-9]{3})-([0-9]{4})\s?(.*)`)
+	match := r.FindStringSubmatch(fullAddress)
+	if len(match) > 3 {
+		postalCode := match[1] + match[2]      // Postal code
+		address := strings.TrimSpace(match[3]) // Address
+		return postalCode, address, nil
+	}
+	return "", "", fmt.Errorf("unable to find postal code and address in: %s", fullAddress)
+}
+
 func CreateMunicipality(ctx context.Context, client *ent.Client, article *Article) (*ent.Municipality, error) {
-	zipCode, _, err := GetZipcodeAndAddress(article.Address)
+	zipCode, address, err := GetZipcodeAndAddress(article.Address)
+
 	fmt.Printf("zipCode: %s\n", zipCode)
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	name, err := GetMunicipalityByZipcode(zipCode)
+	name, err := GetMunicipalityByAddress(address)
 	if err != nil {
-		return nil, fmt.Errorf("failed getting municipalityName: %w", err)
+		n, err := GetMunicipalityByZipcode(zipCode)
+		if err != nil {
+			return nil, fmt.Errorf("failed exec GetMunicipalityByZipcode: %w", err)
+		}
+		name = n
 	}
 	id, err := client.Municipality.
 		Create().
