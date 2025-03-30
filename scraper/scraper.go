@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"regexp"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -390,22 +389,49 @@ func Runner(client *ent.Client, target string, numWorkers int, rps float64, limi
 	pool := NewWorkerPool(numWorkers, client, rps, CreateMeshiAndMunicipality)
 	pool.Start()
 	
-	// 結果処理用goroutine
+	// 結果処理用変数
 	successCount := 0
 	errorCount := 0
+	totalProcessed := 0
 	
 	// 記事一覧の取得
 	baseURL := "https://www.otv.co.jp/okitive/collaborator/ageage/page/%d"
 	page := 1
-	totalArticles := 0
+	totalQueued := 0
 	
-	// 記事一覧取得と処理
-	articles := []Article{}
+	// 処理完了したページ数
+	pagesProcessed := 0
+	
+	// 結果チャネルを処理するgoroutine
+	resultChan := make(chan *ProcessResult, 100) // 結果を一時的に保存するチャネル
+	
+	go func() {
+		for result := range resultChan {
+			if result.Error != nil {
+				errorCount++
+				log.Printf("Error processing article %s: %v", 
+						  result.Article.ArticleID, result.Error)
+			} else {
+				successCount++
+				log.Printf("Successfully processed article %s", result.Article.ArticleID)
+			}
+			totalProcessed++
+			log.Printf("Progress: %d successful, %d errors of %d processed so far", 
+				successCount, errorCount, totalProcessed)
+		}
+	}()
 	
 	for {
+		// 制限に達したかチェック
+		if limit > 0 && totalQueued >= limit {
+			log.Printf("Reached limit of %d articles, stopping article collection", limit)
+			break
+		}
+		
 		listURL := fmt.Sprintf(baseURL, page)
 		log.Printf("Fetching articles from %s", listURL)
 		
+		// ページから記事を取得
 		pageArticles, err := FindArticles(listURL)
 		if err != nil {
 			log.Printf("Error finding articles: %v", err)
@@ -419,18 +445,56 @@ func Runner(client *ent.Client, target string, numWorkers int, rps float64, limi
 			break
 		}
 		
-		// 記事をリストに追加
-		articles = append(articles, pageArticles...)
+		// このページの記事を処理
+		articlesToProcess := pageArticles
 		
-		// 制限に達したら記事取得を終了
-		if limit > 0 && len(articles) >= limit {
-			log.Printf("Reached limit of %d articles, stopping article collection", limit)
-			// 制限に合わせて記事数を調整
-			if len(articles) > limit {
-				articles = articles[:limit]
+		// 制限に達する場合は部分的に処理
+		if limit > 0 {
+			remaining := limit - totalQueued
+			if remaining <= 0 {
+				break
 			}
-			break
+			if len(articlesToProcess) > remaining {
+				articlesToProcess = articlesToProcess[:remaining]
+			}
 		}
+		
+		// このページの処理を待機するための変数
+		pageComplete := make(chan bool)
+		pageArticlesCount := len(articlesToProcess)
+		pageProcessed := 0
+		
+		// このページの結果処理用goroutine
+		go func() {
+			// このページの記事がすべて処理されるまで待機
+			for result := range pool.ResultChan {
+				// 結果を転送
+				resultChan <- result
+				
+				pageProcessed++
+				if pageProcessed >= pageArticlesCount {
+					// このページのすべての記事が処理された
+					close(pageComplete)
+					break
+				}
+			}
+		}()
+		
+		// 各記事をキューに追加
+		for i := range articlesToProcess {
+			// 値渡しでコピーを作成して使用
+			article := articlesToProcess[i]
+			
+			// ジョブキューに送信
+			pool.JobQueue <- &article
+			log.Printf("Queued article: %s - %s", article.ArticleID, article.Title)
+			totalQueued++
+		}
+		
+		// このページの処理が完了するのを待つ
+		<-pageComplete
+		pagesProcessed++
+		log.Printf("Completed processing all articles from page %d", page)
 		
 		// 単一ページモードの場合は最初のページのみ処理
 		if target == "single" {
@@ -445,51 +509,17 @@ func Runner(client *ent.Client, target string, numWorkers int, rps float64, limi
 		time.Sleep(time.Second * 2)
 	}
 	
-	// 実際に処理する記事数を設定
-	totalArticles = len(articles)
-	log.Printf("Total articles to process: %d", totalArticles)
+	// すべての記事キューイングが完了
+	log.Printf("All articles queued and processed (%d total across %d pages)", 
+		totalProcessed, pagesProcessed)
 	
-	// 同期用WaitGroup
-	var wg sync.WaitGroup
-	wg.Add(totalArticles)
-	
-	// 結果処理用goroutine
-	go func() {
-		for result := range pool.ResultChan {
-			if result.Error != nil {
-				errorCount++
-				log.Printf("Error processing article %s: %v", 
-						  result.Article.ArticleID, result.Error)
-			} else {
-				successCount++
-				log.Printf("Successfully processed article %s", result.Article.ArticleID)
-			}
-			log.Printf("Progress: %d successful, %d errors of %d total", 
-				successCount, errorCount, totalArticles)
-			wg.Done()
-		}
-	}()
-	
-	// 記事をキューに送信
-	for i := range articles {
-		// ポインタをキャプチャするために添字アクセス
-		pool.JobQueue <- &articles[i]
-		log.Printf("Queued article: %s - %s", articles[i].ArticleID, articles[i].Title)
-	}
-	
-	log.Printf("All articles queued. Waiting for processing to complete...")
-	
-	// JobQueueをクローズしてワーカーに終了を通知
+	// チャネルを閉じる
+	close(resultChan)
 	close(pool.JobQueue)
-	
-	// 全記事の処理完了を待機
-	wg.Wait()
-	
-	// すべての結果処理が完了してからResultChanをクローズ
 	close(pool.ResultChan)
 	
 	log.Printf("All jobs completed. Processed %d articles: %d successful, %d errors", 
-		totalArticles, successCount, errorCount)
+		totalProcessed, successCount, errorCount)
 	
 	return nil
 } 

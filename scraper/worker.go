@@ -65,10 +65,11 @@ func (w *Worker) Start() {
 			log.Printf("Worker %d processing article %s", w.ID, article.ArticleID)
 			// レート制限に従って待機
 			if err := w.RateLimiter.Wait(context.Background()); err != nil {
-				w.ResultChan <- &ProcessResult{
+				result := &ProcessResult{
 					Article: article,
 					Error:   fmt.Errorf("rate limiter error: %w", err),
 				}
+				w.ResultChan <- result
 				continue
 			}
 
@@ -105,7 +106,9 @@ func (w *Worker) Process(article *Article) *ProcessResult {
 	}
 	
 	// 新規データ作成
-	result := &ProcessResult{Article: article}
+	result := &ProcessResult{
+		Article: article,
+	}
 	meshi, err := w.Processor(ctx, w.Client, article)
 	result.Meshi = meshi
 	result.Error = err
