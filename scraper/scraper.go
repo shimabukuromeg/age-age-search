@@ -197,7 +197,7 @@ func CreateMunicipality(ctx context.Context, client *ent.Client, article *Articl
 			Create().
 			SetName(name).
 			SetZipcode("unknown").  // 郵便番号不明の場合
-			OnConflictColumns("name").
+			OnConflict().
 			UpdateNewValues().
 			ID(ctx)
 		
@@ -230,7 +230,7 @@ func CreateMunicipality(ctx context.Context, client *ent.Client, article *Articl
 				Create().
 				SetName(name).
 				SetZipcode(zipCode).
-				OnConflictColumns("name").
+				OnConflict().
 				UpdateNewValues().
 				ID(ctx)
 				
@@ -252,7 +252,7 @@ func CreateMunicipality(ctx context.Context, client *ent.Client, article *Articl
 		Create().
 		SetName(name).
 		SetZipcode(zipCode).
-		OnConflictColumns("name").
+		OnConflict().
 		UpdateNewValues().
 		ID(ctx)
 
