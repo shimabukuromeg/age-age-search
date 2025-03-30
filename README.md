@@ -2,6 +2,7 @@
 
 This tool scrapes information from a designated [ageage](https://www.otv.co.jp/okitive/collaborator/ageage/page/1/) website and saves it into a SQLite or PostgreSQL database.
 
+
 ## Setup and Running
 
 This project is written in Go and requires a Go development environment. Please make sure you have Go installed and your PATH is set properly.
