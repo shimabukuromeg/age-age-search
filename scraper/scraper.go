@@ -369,8 +369,22 @@ func SetupDB(dbType, dsn string, isCreateSchema bool) (*ent.Client, error) {
 }
 
 // Runner はスクレイピング処理を実行します
-func Runner(client *ent.Client, target string, numWorkers int, rps float64) error {
+func Runner(client *ent.Client, target string, numWorkers int, rps float64, limit int) error {
 	log.Printf("Starting scraper with %d workers, rate limit: %.1f requests/sec", numWorkers, rps)
+	
+	// リミットとターゲットのログ表示
+	if limit > 0 {
+		log.Printf("Limit set to %d articles", limit)
+	}
+	
+	if target == "single" {
+		log.Printf("Target mode: single page (only first page)")
+	} else if target == "all" {
+		log.Printf("Target mode: all pages")
+	} else {
+		log.Printf("Unknown target mode: %s, defaulting to single page", target)
+		target = "single"
+	}
 	
 	// ワーカープールの設定
 	pool := NewWorkerPool(numWorkers, client, rps, CreateMeshiAndMunicipality)
@@ -399,7 +413,6 @@ func Runner(client *ent.Client, target string, numWorkers int, rps float64) erro
 		}
 		
 		log.Printf("Found %d articles on page %d", len(pageArticles), page)
-		totalArticles += len(pageArticles)
 		
 		// 記事が見つからなければ終了
 		if len(pageArticles) == 0 {
@@ -409,9 +422,22 @@ func Runner(client *ent.Client, target string, numWorkers int, rps float64) erro
 		// 記事をリストに追加
 		articles = append(articles, pageArticles...)
 		
-		if target == "first" {
+		// 制限に達したら記事取得を終了
+		if limit > 0 && len(articles) >= limit {
+			log.Printf("Reached limit of %d articles, stopping article collection", limit)
+			// 制限に合わせて記事数を調整
+			if len(articles) > limit {
+				articles = articles[:limit]
+			}
 			break
 		}
+		
+		// 単一ページモードの場合は最初のページのみ処理
+		if target == "single" {
+			log.Printf("Single page mode: stopping after first page")
+			break
+		}
+		
 		page++
 		
 		// ページ間の移動にも適切な間隔を設ける
@@ -419,7 +445,9 @@ func Runner(client *ent.Client, target string, numWorkers int, rps float64) erro
 		time.Sleep(time.Second * 2)
 	}
 	
-	log.Printf("Total articles found: %d", totalArticles)
+	// 実際に処理する記事数を設定
+	totalArticles = len(articles)
+	log.Printf("Total articles to process: %d", totalArticles)
 	
 	// 同期用WaitGroup
 	var wg sync.WaitGroup
