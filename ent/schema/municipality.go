@@ -18,27 +18,32 @@ type Municipality struct {
 // Fields of the Municipality.
 func (Municipality) Fields() []ent.Field {
 	return []ent.Field{
-		field.Text("name").
-			Unique().Annotations(
-			entgql.OrderField("NAME"),
-		),
-		field.Text("zipcode").
-			Unique().Annotations(
-			entgql.OrderField("ZIPCODE"),
-		).Optional(),
+		field.String("name").
+			Unique().
+			Annotations(
+				entgql.OrderField("NAME"),
+			),
+		field.String("zipcode").
+			Unique().
+			Optional().
+			Annotations(
+				entgql.OrderField("ZIPCODE"),
+			),
 		field.Time("created_at").
-			Default(time.Now).Annotations(
-			entgql.OrderField("CREATED_AT"),
-		),
+			Default(time.Now).
+			Annotations(
+				entgql.OrderField("CREATED_AT"),
+			),
 	}
 }
 
 // Edges of the Municipality.
 func (Municipality) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("meshis", Meshi.Type).Annotations(
-			entgql.RelayConnection(),
-		),
+		edge.To("meshis", Meshi.Type).
+			Annotations(
+				entgql.RelayConnection(),
+			),
 	}
 }
 

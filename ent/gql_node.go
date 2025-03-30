@@ -95,27 +95,21 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 	case meshi.Table:
 		query := c.Meshi.Query().
 			Where(meshi.ID(id))
-		query, err := query.CollectFields(ctx, meshiImplementors...)
-		if err != nil {
-			return nil, err
+		if fc := graphql.GetFieldContext(ctx); fc != nil {
+			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, meshiImplementors...); err != nil {
+				return nil, err
+			}
 		}
-		n, err := query.Only(ctx)
-		if err != nil {
-			return nil, err
-		}
-		return n, nil
+		return query.Only(ctx)
 	case municipality.Table:
 		query := c.Municipality.Query().
 			Where(municipality.ID(id))
-		query, err := query.CollectFields(ctx, municipalityImplementors...)
-		if err != nil {
-			return nil, err
+		if fc := graphql.GetFieldContext(ctx); fc != nil {
+			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, municipalityImplementors...); err != nil {
+				return nil, err
+			}
 		}
-		n, err := query.Only(ctx)
-		if err != nil {
-			return nil, err
-		}
-		return n, nil
+		return query.Only(ctx)
 	default:
 		return nil, fmt.Errorf("cannot resolve noder from table %q: %w", table, errNodeInvalidID)
 	}

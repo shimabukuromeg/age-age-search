@@ -24,39 +24,47 @@ func (Meshi) Fields() []ent.Field {
 				entgql.OrderField("ARTICLE_ID"),
 			),
 		field.String("title").
-			Default("unknown").Annotations(
-			entgql.OrderField("TITLE"),
-		),
+			Default("unknown").
+			Annotations(
+				entgql.OrderField("TITLE"),
+			),
 		field.String("image_url").
-			Default("unknown").Annotations(
-			entgql.OrderField("IMAGE_URL"),
-		),
+			Default("unknown").
+			Annotations(
+				entgql.OrderField("IMAGE_URL"),
+			),
 		field.String("store_name").
 			Default("unknown").
 			Annotations(
 				entgql.OrderField("STORE_NAME"),
 			),
 		field.String("address").
-			Default("unknown").Annotations(
-			entgql.OrderField("ADDRESS"),
-		),
+			Default("unknown").
+			Annotations(
+				entgql.OrderField("ADDRESS"),
+			),
 		field.String("site_url").
-			Default("unknown").Annotations(
-			entgql.OrderField("SITE_URL"),
-		),
-		field.Time("published_date").Annotations(
-			entgql.OrderField("PUBLISHED_DATE"),
-		),
-		field.Float("latitude").Annotations(
-			entgql.OrderField("LATITUDE"),
-		),
-		field.Float("longitude").Annotations(
-			entgql.OrderField("LONGITUDE"),
-		),
+			Default("unknown").
+			Annotations(
+				entgql.OrderField("SITE_URL"),
+			),
+		field.Time("published_date").
+			Annotations(
+				entgql.OrderField("PUBLISHED_DATE"),
+			),
+		field.Float("latitude").
+			Annotations(
+				entgql.OrderField("LATITUDE"),
+			),
+		field.Float("longitude").
+			Annotations(
+				entgql.OrderField("LONGITUDE"),
+			),
 		field.Time("created_at").
-			Default(time.Now).Annotations(
-			entgql.OrderField("CREATED_AT"),
-		),
+			Default(time.Now).
+			Annotations(
+				entgql.OrderField("CREATED_AT"),
+			),
 	}
 }
 

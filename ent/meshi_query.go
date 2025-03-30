@@ -25,6 +25,8 @@ type MeshiQuery struct {
 	predicates       []predicate.Meshi
 	withMunicipality *MunicipalityQuery
 	withFKs          bool
+	modifiers        []func(*sql.Selector)
+	loadTotal        []func(context.Context, []*Meshi) error
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -391,6 +393,9 @@ func (mq *MeshiQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Meshi,
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	if len(mq.modifiers) > 0 {
+		_spec.Modifiers = mq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -403,6 +408,11 @@ func (mq *MeshiQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Meshi,
 	if query := mq.withMunicipality; query != nil {
 		if err := mq.loadMunicipality(ctx, query, nodes, nil,
 			func(n *Meshi, e *Municipality) { n.Edges.Municipality = e }); err != nil {
+			return nil, err
+		}
+	}
+	for i := range mq.loadTotal {
+		if err := mq.loadTotal[i](ctx, nodes); err != nil {
 			return nil, err
 		}
 	}
@@ -444,6 +454,9 @@ func (mq *MeshiQuery) loadMunicipality(ctx context.Context, query *MunicipalityQ
 
 func (mq *MeshiQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := mq.querySpec()
+	if len(mq.modifiers) > 0 {
+		_spec.Modifiers = mq.modifiers
+	}
 	_spec.Node.Columns = mq.ctx.Fields
 	if len(mq.ctx.Fields) > 0 {
 		_spec.Unique = mq.ctx.Unique != nil && *mq.ctx.Unique

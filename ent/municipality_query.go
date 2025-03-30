@@ -20,11 +20,14 @@ import (
 // MunicipalityQuery is the builder for querying Municipality entities.
 type MunicipalityQuery struct {
 	config
-	ctx        *QueryContext
-	order      []municipality.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Municipality
-	withMeshis *MeshiQuery
+	ctx             *QueryContext
+	order           []municipality.OrderOption
+	inters          []Interceptor
+	predicates      []predicate.Municipality
+	withMeshis      *MeshiQuery
+	modifiers       []func(*sql.Selector)
+	loadTotal       []func(context.Context, []*Municipality) error
+	withNamedMeshis map[string]*MeshiQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -384,6 +387,9 @@ func (mq *MunicipalityQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	if len(mq.modifiers) > 0 {
+		_spec.Modifiers = mq.modifiers
+	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -397,6 +403,18 @@ func (mq *MunicipalityQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 		if err := mq.loadMeshis(ctx, query, nodes,
 			func(n *Municipality) { n.Edges.Meshis = []*Meshi{} },
 			func(n *Municipality, e *Meshi) { n.Edges.Meshis = append(n.Edges.Meshis, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range mq.withNamedMeshis {
+		if err := mq.loadMeshis(ctx, query, nodes,
+			func(n *Municipality) { n.appendNamedMeshis(name) },
+			func(n *Municipality, e *Meshi) { n.appendNamedMeshis(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for i := range mq.loadTotal {
+		if err := mq.loadTotal[i](ctx, nodes); err != nil {
 			return nil, err
 		}
 	}
@@ -437,6 +455,9 @@ func (mq *MunicipalityQuery) loadMeshis(ctx context.Context, query *MeshiQuery, 
 
 func (mq *MunicipalityQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := mq.querySpec()
+	if len(mq.modifiers) > 0 {
+		_spec.Modifiers = mq.modifiers
+	}
 	_spec.Node.Columns = mq.ctx.Fields
 	if len(mq.ctx.Fields) > 0 {
 		_spec.Unique = mq.ctx.Unique != nil && *mq.ctx.Unique
@@ -514,6 +535,20 @@ func (mq *MunicipalityQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
+}
+
+// WithNamedMeshis tells the query-builder to eager-load the nodes that are connected to the "meshis"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (mq *MunicipalityQuery) WithNamedMeshis(name string, opts ...func(*MeshiQuery)) *MunicipalityQuery {
+	query := (&MeshiClient{config: mq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if mq.withNamedMeshis == nil {
+		mq.withNamedMeshis = make(map[string]*MeshiQuery)
+	}
+	mq.withNamedMeshis[name] = query
+	return mq
 }
 
 // MunicipalityGroupBy is the group-by builder for Municipality entities.
