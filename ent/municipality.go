@@ -36,10 +36,6 @@ type MunicipalityEdges struct {
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
-	// totalCount holds the count of the edges above.
-	totalCount [1]map[string]int
-
-	namedMeshis map[string][]*Meshi
 }
 
 // MeshisOrErr returns the Meshis value or an error if the edge
@@ -152,30 +148,6 @@ func (m *Municipality) String() string {
 	builder.WriteString(m.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
-}
-
-// NamedMeshis returns the Meshis named value or an error if the edge was not
-// loaded in eager-loading with this name.
-func (m *Municipality) NamedMeshis(name string) ([]*Meshi, error) {
-	if m.Edges.namedMeshis == nil {
-		return nil, &NotLoadedError{edge: name}
-	}
-	nodes, ok := m.Edges.namedMeshis[name]
-	if !ok {
-		return nil, &NotLoadedError{edge: name}
-	}
-	return nodes, nil
-}
-
-func (m *Municipality) appendNamedMeshis(name string, edges ...*Meshi) {
-	if m.Edges.namedMeshis == nil {
-		m.Edges.namedMeshis = make(map[string][]*Meshi)
-	}
-	if len(edges) == 0 {
-		m.Edges.namedMeshis[name] = []*Meshi{}
-	} else {
-		m.Edges.namedMeshis[name] = append(m.Edges.namedMeshis[name], edges...)
-	}
 }
 
 // Municipalities is a parsable slice of Municipality.

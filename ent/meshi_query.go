@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -24,8 +25,6 @@ type MeshiQuery struct {
 	predicates       []predicate.Meshi
 	withMunicipality *MunicipalityQuery
 	withFKs          bool
-	modifiers        []func(*sql.Selector)
-	loadTotal        []func(context.Context, []*Meshi) error
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -87,7 +86,7 @@ func (mq *MeshiQuery) QueryMunicipality() *MunicipalityQuery {
 // First returns the first Meshi entity from the query.
 // Returns a *NotFoundError when no Meshi was found.
 func (mq *MeshiQuery) First(ctx context.Context) (*Meshi, error) {
-	nodes, err := mq.Limit(1).All(setContextOp(ctx, mq.ctx, "First"))
+	nodes, err := mq.Limit(1).All(setContextOp(ctx, mq.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +109,7 @@ func (mq *MeshiQuery) FirstX(ctx context.Context) *Meshi {
 // Returns a *NotFoundError when no Meshi ID was found.
 func (mq *MeshiQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = mq.Limit(1).IDs(setContextOp(ctx, mq.ctx, "FirstID")); err != nil {
+	if ids, err = mq.Limit(1).IDs(setContextOp(ctx, mq.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -133,7 +132,7 @@ func (mq *MeshiQuery) FirstIDX(ctx context.Context) int {
 // Returns a *NotSingularError when more than one Meshi entity is found.
 // Returns a *NotFoundError when no Meshi entities are found.
 func (mq *MeshiQuery) Only(ctx context.Context) (*Meshi, error) {
-	nodes, err := mq.Limit(2).All(setContextOp(ctx, mq.ctx, "Only"))
+	nodes, err := mq.Limit(2).All(setContextOp(ctx, mq.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -161,7 +160,7 @@ func (mq *MeshiQuery) OnlyX(ctx context.Context) *Meshi {
 // Returns a *NotFoundError when no entities are found.
 func (mq *MeshiQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = mq.Limit(2).IDs(setContextOp(ctx, mq.ctx, "OnlyID")); err != nil {
+	if ids, err = mq.Limit(2).IDs(setContextOp(ctx, mq.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -186,7 +185,7 @@ func (mq *MeshiQuery) OnlyIDX(ctx context.Context) int {
 
 // All executes the query and returns a list of Meshis.
 func (mq *MeshiQuery) All(ctx context.Context) ([]*Meshi, error) {
-	ctx = setContextOp(ctx, mq.ctx, "All")
+	ctx = setContextOp(ctx, mq.ctx, ent.OpQueryAll)
 	if err := mq.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
@@ -208,7 +207,7 @@ func (mq *MeshiQuery) IDs(ctx context.Context) (ids []int, err error) {
 	if mq.ctx.Unique == nil && mq.path != nil {
 		mq.Unique(true)
 	}
-	ctx = setContextOp(ctx, mq.ctx, "IDs")
+	ctx = setContextOp(ctx, mq.ctx, ent.OpQueryIDs)
 	if err = mq.Select(meshi.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -226,7 +225,7 @@ func (mq *MeshiQuery) IDsX(ctx context.Context) []int {
 
 // Count returns the count of the given query.
 func (mq *MeshiQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, mq.ctx, "Count")
+	ctx = setContextOp(ctx, mq.ctx, ent.OpQueryCount)
 	if err := mq.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
@@ -244,7 +243,7 @@ func (mq *MeshiQuery) CountX(ctx context.Context) int {
 
 // Exist returns true if the query has elements in the graph.
 func (mq *MeshiQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, mq.ctx, "Exist")
+	ctx = setContextOp(ctx, mq.ctx, ent.OpQueryExist)
 	switch _, err := mq.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
@@ -392,9 +391,6 @@ func (mq *MeshiQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Meshi,
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(mq.modifiers) > 0 {
-		_spec.Modifiers = mq.modifiers
-	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -407,11 +403,6 @@ func (mq *MeshiQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Meshi,
 	if query := mq.withMunicipality; query != nil {
 		if err := mq.loadMunicipality(ctx, query, nodes, nil,
 			func(n *Meshi, e *Municipality) { n.Edges.Municipality = e }); err != nil {
-			return nil, err
-		}
-	}
-	for i := range mq.loadTotal {
-		if err := mq.loadTotal[i](ctx, nodes); err != nil {
 			return nil, err
 		}
 	}
@@ -453,9 +444,6 @@ func (mq *MeshiQuery) loadMunicipality(ctx context.Context, query *MunicipalityQ
 
 func (mq *MeshiQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := mq.querySpec()
-	if len(mq.modifiers) > 0 {
-		_spec.Modifiers = mq.modifiers
-	}
 	_spec.Node.Columns = mq.ctx.Fields
 	if len(mq.ctx.Fields) > 0 {
 		_spec.Unique = mq.ctx.Unique != nil && *mq.ctx.Unique
@@ -549,7 +537,7 @@ func (mgb *MeshiGroupBy) Aggregate(fns ...AggregateFunc) *MeshiGroupBy {
 
 // Scan applies the selector query and scans the result into the given value.
 func (mgb *MeshiGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, mgb.build.ctx, "GroupBy")
+	ctx = setContextOp(ctx, mgb.build.ctx, ent.OpQueryGroupBy)
 	if err := mgb.build.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -597,7 +585,7 @@ func (ms *MeshiSelect) Aggregate(fns ...AggregateFunc) *MeshiSelect {
 
 // Scan applies the selector query and scans the result into the given value.
 func (ms *MeshiSelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, ms.ctx, "Select")
+	ctx = setContextOp(ctx, ms.ctx, ent.OpQuerySelect)
 	if err := ms.prepareQuery(ctx); err != nil {
 		return err
 	}

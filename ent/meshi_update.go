@@ -35,6 +35,14 @@ func (mu *MeshiUpdate) SetArticleID(s string) *MeshiUpdate {
 	return mu
 }
 
+// SetNillableArticleID sets the "article_id" field if the given value is not nil.
+func (mu *MeshiUpdate) SetNillableArticleID(s *string) *MeshiUpdate {
+	if s != nil {
+		mu.SetArticleID(*s)
+	}
+	return mu
+}
+
 // SetTitle sets the "title" field.
 func (mu *MeshiUpdate) SetTitle(s string) *MeshiUpdate {
 	mu.mutation.SetTitle(s)
@@ -111,10 +119,26 @@ func (mu *MeshiUpdate) SetPublishedDate(t time.Time) *MeshiUpdate {
 	return mu
 }
 
+// SetNillablePublishedDate sets the "published_date" field if the given value is not nil.
+func (mu *MeshiUpdate) SetNillablePublishedDate(t *time.Time) *MeshiUpdate {
+	if t != nil {
+		mu.SetPublishedDate(*t)
+	}
+	return mu
+}
+
 // SetLatitude sets the "latitude" field.
 func (mu *MeshiUpdate) SetLatitude(f float64) *MeshiUpdate {
 	mu.mutation.ResetLatitude()
 	mu.mutation.SetLatitude(f)
+	return mu
+}
+
+// SetNillableLatitude sets the "latitude" field if the given value is not nil.
+func (mu *MeshiUpdate) SetNillableLatitude(f *float64) *MeshiUpdate {
+	if f != nil {
+		mu.SetLatitude(*f)
+	}
 	return mu
 }
 
@@ -128,6 +152,14 @@ func (mu *MeshiUpdate) AddLatitude(f float64) *MeshiUpdate {
 func (mu *MeshiUpdate) SetLongitude(f float64) *MeshiUpdate {
 	mu.mutation.ResetLongitude()
 	mu.mutation.SetLongitude(f)
+	return mu
+}
+
+// SetNillableLongitude sets the "longitude" field if the given value is not nil.
+func (mu *MeshiUpdate) SetNillableLongitude(f *float64) *MeshiUpdate {
+	if f != nil {
+		mu.SetLongitude(*f)
+	}
 	return mu
 }
 
@@ -308,6 +340,14 @@ func (muo *MeshiUpdateOne) SetArticleID(s string) *MeshiUpdateOne {
 	return muo
 }
 
+// SetNillableArticleID sets the "article_id" field if the given value is not nil.
+func (muo *MeshiUpdateOne) SetNillableArticleID(s *string) *MeshiUpdateOne {
+	if s != nil {
+		muo.SetArticleID(*s)
+	}
+	return muo
+}
+
 // SetTitle sets the "title" field.
 func (muo *MeshiUpdateOne) SetTitle(s string) *MeshiUpdateOne {
 	muo.mutation.SetTitle(s)
@@ -384,10 +424,26 @@ func (muo *MeshiUpdateOne) SetPublishedDate(t time.Time) *MeshiUpdateOne {
 	return muo
 }
 
+// SetNillablePublishedDate sets the "published_date" field if the given value is not nil.
+func (muo *MeshiUpdateOne) SetNillablePublishedDate(t *time.Time) *MeshiUpdateOne {
+	if t != nil {
+		muo.SetPublishedDate(*t)
+	}
+	return muo
+}
+
 // SetLatitude sets the "latitude" field.
 func (muo *MeshiUpdateOne) SetLatitude(f float64) *MeshiUpdateOne {
 	muo.mutation.ResetLatitude()
 	muo.mutation.SetLatitude(f)
+	return muo
+}
+
+// SetNillableLatitude sets the "latitude" field if the given value is not nil.
+func (muo *MeshiUpdateOne) SetNillableLatitude(f *float64) *MeshiUpdateOne {
+	if f != nil {
+		muo.SetLatitude(*f)
+	}
 	return muo
 }
 
@@ -401,6 +457,14 @@ func (muo *MeshiUpdateOne) AddLatitude(f float64) *MeshiUpdateOne {
 func (muo *MeshiUpdateOne) SetLongitude(f float64) *MeshiUpdateOne {
 	muo.mutation.ResetLongitude()
 	muo.mutation.SetLongitude(f)
+	return muo
+}
+
+// SetNillableLongitude sets the "longitude" field if the given value is not nil.
+func (muo *MeshiUpdateOne) SetNillableLongitude(f *float64) *MeshiUpdateOne {
+	if f != nil {
+		muo.SetLongitude(*f)
+	}
 	return muo
 }
 

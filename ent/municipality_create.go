@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"time"
 
-	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/shimabukuromeg/ageage-search/ent/meshi"
@@ -20,7 +19,6 @@ type MunicipalityCreate struct {
 	config
 	mutation *MunicipalityMutation
 	hooks    []Hook
-	conflict []sql.ConflictOption
 }
 
 // SetName sets the "name" field.
@@ -147,7 +145,6 @@ func (mc *MunicipalityCreate) createSpec() (*Municipality, *sqlgraph.CreateSpec)
 		_node = &Municipality{config: mc.config}
 		_spec = sqlgraph.NewCreateSpec(municipality.Table, sqlgraph.NewFieldSpec(municipality.FieldID, field.TypeInt))
 	)
-	_spec.OnConflict = mc.conflict
 	if value, ok := mc.mutation.Name(); ok {
 		_spec.SetField(municipality.FieldName, field.TypeString, value)
 		_node.Name = value
@@ -179,228 +176,18 @@ func (mc *MunicipalityCreate) createSpec() (*Municipality, *sqlgraph.CreateSpec)
 	return _node, _spec
 }
 
-// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
-// of the `INSERT` statement. For example:
-//
-//	client.Municipality.Create().
-//		SetName(v).
-//		OnConflict(
-//			// Update the row with the new values
-//			// the was proposed for insertion.
-//			sql.ResolveWithNewValues(),
-//		).
-//		// Override some of the fields with custom
-//		// update values.
-//		Update(func(u *ent.MunicipalityUpsert) {
-//			SetName(v+v).
-//		}).
-//		Exec(ctx)
-func (mc *MunicipalityCreate) OnConflict(opts ...sql.ConflictOption) *MunicipalityUpsertOne {
-	mc.conflict = opts
-	return &MunicipalityUpsertOne{
-		create: mc,
-	}
-}
-
-// OnConflictColumns calls `OnConflict` and configures the columns
-// as conflict target. Using this option is equivalent to using:
-//
-//	client.Municipality.Create().
-//		OnConflict(sql.ConflictColumns(columns...)).
-//		Exec(ctx)
-func (mc *MunicipalityCreate) OnConflictColumns(columns ...string) *MunicipalityUpsertOne {
-	mc.conflict = append(mc.conflict, sql.ConflictColumns(columns...))
-	return &MunicipalityUpsertOne{
-		create: mc,
-	}
-}
-
-type (
-	// MunicipalityUpsertOne is the builder for "upsert"-ing
-	//  one Municipality node.
-	MunicipalityUpsertOne struct {
-		create *MunicipalityCreate
-	}
-
-	// MunicipalityUpsert is the "OnConflict" setter.
-	MunicipalityUpsert struct {
-		*sql.UpdateSet
-	}
-)
-
-// SetName sets the "name" field.
-func (u *MunicipalityUpsert) SetName(v string) *MunicipalityUpsert {
-	u.Set(municipality.FieldName, v)
-	return u
-}
-
-// UpdateName sets the "name" field to the value that was provided on create.
-func (u *MunicipalityUpsert) UpdateName() *MunicipalityUpsert {
-	u.SetExcluded(municipality.FieldName)
-	return u
-}
-
-// SetZipcode sets the "zipcode" field.
-func (u *MunicipalityUpsert) SetZipcode(v string) *MunicipalityUpsert {
-	u.Set(municipality.FieldZipcode, v)
-	return u
-}
-
-// UpdateZipcode sets the "zipcode" field to the value that was provided on create.
-func (u *MunicipalityUpsert) UpdateZipcode() *MunicipalityUpsert {
-	u.SetExcluded(municipality.FieldZipcode)
-	return u
-}
-
-// ClearZipcode clears the value of the "zipcode" field.
-func (u *MunicipalityUpsert) ClearZipcode() *MunicipalityUpsert {
-	u.SetNull(municipality.FieldZipcode)
-	return u
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (u *MunicipalityUpsert) SetCreatedAt(v time.Time) *MunicipalityUpsert {
-	u.Set(municipality.FieldCreatedAt, v)
-	return u
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *MunicipalityUpsert) UpdateCreatedAt() *MunicipalityUpsert {
-	u.SetExcluded(municipality.FieldCreatedAt)
-	return u
-}
-
-// UpdateNewValues updates the mutable fields using the new values that were set on create.
-// Using this option is equivalent to using:
-//
-//	client.Municipality.Create().
-//		OnConflict(
-//			sql.ResolveWithNewValues(),
-//		).
-//		Exec(ctx)
-func (u *MunicipalityUpsertOne) UpdateNewValues() *MunicipalityUpsertOne {
-	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
-	return u
-}
-
-// Ignore sets each column to itself in case of conflict.
-// Using this option is equivalent to using:
-//
-//	client.Municipality.Create().
-//	    OnConflict(sql.ResolveWithIgnore()).
-//	    Exec(ctx)
-func (u *MunicipalityUpsertOne) Ignore() *MunicipalityUpsertOne {
-	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
-	return u
-}
-
-// DoNothing configures the conflict_action to `DO NOTHING`.
-// Supported only by SQLite and PostgreSQL.
-func (u *MunicipalityUpsertOne) DoNothing() *MunicipalityUpsertOne {
-	u.create.conflict = append(u.create.conflict, sql.DoNothing())
-	return u
-}
-
-// Update allows overriding fields `UPDATE` values. See the MunicipalityCreate.OnConflict
-// documentation for more info.
-func (u *MunicipalityUpsertOne) Update(set func(*MunicipalityUpsert)) *MunicipalityUpsertOne {
-	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
-		set(&MunicipalityUpsert{UpdateSet: update})
-	}))
-	return u
-}
-
-// SetName sets the "name" field.
-func (u *MunicipalityUpsertOne) SetName(v string) *MunicipalityUpsertOne {
-	return u.Update(func(s *MunicipalityUpsert) {
-		s.SetName(v)
-	})
-}
-
-// UpdateName sets the "name" field to the value that was provided on create.
-func (u *MunicipalityUpsertOne) UpdateName() *MunicipalityUpsertOne {
-	return u.Update(func(s *MunicipalityUpsert) {
-		s.UpdateName()
-	})
-}
-
-// SetZipcode sets the "zipcode" field.
-func (u *MunicipalityUpsertOne) SetZipcode(v string) *MunicipalityUpsertOne {
-	return u.Update(func(s *MunicipalityUpsert) {
-		s.SetZipcode(v)
-	})
-}
-
-// UpdateZipcode sets the "zipcode" field to the value that was provided on create.
-func (u *MunicipalityUpsertOne) UpdateZipcode() *MunicipalityUpsertOne {
-	return u.Update(func(s *MunicipalityUpsert) {
-		s.UpdateZipcode()
-	})
-}
-
-// ClearZipcode clears the value of the "zipcode" field.
-func (u *MunicipalityUpsertOne) ClearZipcode() *MunicipalityUpsertOne {
-	return u.Update(func(s *MunicipalityUpsert) {
-		s.ClearZipcode()
-	})
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (u *MunicipalityUpsertOne) SetCreatedAt(v time.Time) *MunicipalityUpsertOne {
-	return u.Update(func(s *MunicipalityUpsert) {
-		s.SetCreatedAt(v)
-	})
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *MunicipalityUpsertOne) UpdateCreatedAt() *MunicipalityUpsertOne {
-	return u.Update(func(s *MunicipalityUpsert) {
-		s.UpdateCreatedAt()
-	})
-}
-
-// Exec executes the query.
-func (u *MunicipalityUpsertOne) Exec(ctx context.Context) error {
-	if len(u.create.conflict) == 0 {
-		return errors.New("ent: missing options for MunicipalityCreate.OnConflict")
-	}
-	return u.create.Exec(ctx)
-}
-
-// ExecX is like Exec, but panics if an error occurs.
-func (u *MunicipalityUpsertOne) ExecX(ctx context.Context) {
-	if err := u.create.Exec(ctx); err != nil {
-		panic(err)
-	}
-}
-
-// Exec executes the UPSERT query and returns the inserted/updated ID.
-func (u *MunicipalityUpsertOne) ID(ctx context.Context) (id int, err error) {
-	node, err := u.create.Save(ctx)
-	if err != nil {
-		return id, err
-	}
-	return node.ID, nil
-}
-
-// IDX is like ID, but panics if an error occurs.
-func (u *MunicipalityUpsertOne) IDX(ctx context.Context) int {
-	id, err := u.ID(ctx)
-	if err != nil {
-		panic(err)
-	}
-	return id
-}
-
 // MunicipalityCreateBulk is the builder for creating many Municipality entities in bulk.
 type MunicipalityCreateBulk struct {
 	config
+	err      error
 	builders []*MunicipalityCreate
-	conflict []sql.ConflictOption
 }
 
 // Save creates the Municipality entities in the database.
 func (mcb *MunicipalityCreateBulk) Save(ctx context.Context) ([]*Municipality, error) {
+	if mcb.err != nil {
+		return nil, mcb.err
+	}
 	specs := make([]*sqlgraph.CreateSpec, len(mcb.builders))
 	nodes := make([]*Municipality, len(mcb.builders))
 	mutators := make([]Mutator, len(mcb.builders))
@@ -423,7 +210,6 @@ func (mcb *MunicipalityCreateBulk) Save(ctx context.Context) ([]*Municipality, e
 					_, err = mutators[i+1].Mutate(root, mcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
-					spec.OnConflict = mcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, mcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -474,156 +260,6 @@ func (mcb *MunicipalityCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (mcb *MunicipalityCreateBulk) ExecX(ctx context.Context) {
 	if err := mcb.Exec(ctx); err != nil {
-		panic(err)
-	}
-}
-
-// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
-// of the `INSERT` statement. For example:
-//
-//	client.Municipality.CreateBulk(builders...).
-//		OnConflict(
-//			// Update the row with the new values
-//			// the was proposed for insertion.
-//			sql.ResolveWithNewValues(),
-//		).
-//		// Override some of the fields with custom
-//		// update values.
-//		Update(func(u *ent.MunicipalityUpsert) {
-//			SetName(v+v).
-//		}).
-//		Exec(ctx)
-func (mcb *MunicipalityCreateBulk) OnConflict(opts ...sql.ConflictOption) *MunicipalityUpsertBulk {
-	mcb.conflict = opts
-	return &MunicipalityUpsertBulk{
-		create: mcb,
-	}
-}
-
-// OnConflictColumns calls `OnConflict` and configures the columns
-// as conflict target. Using this option is equivalent to using:
-//
-//	client.Municipality.Create().
-//		OnConflict(sql.ConflictColumns(columns...)).
-//		Exec(ctx)
-func (mcb *MunicipalityCreateBulk) OnConflictColumns(columns ...string) *MunicipalityUpsertBulk {
-	mcb.conflict = append(mcb.conflict, sql.ConflictColumns(columns...))
-	return &MunicipalityUpsertBulk{
-		create: mcb,
-	}
-}
-
-// MunicipalityUpsertBulk is the builder for "upsert"-ing
-// a bulk of Municipality nodes.
-type MunicipalityUpsertBulk struct {
-	create *MunicipalityCreateBulk
-}
-
-// UpdateNewValues updates the mutable fields using the new values that
-// were set on create. Using this option is equivalent to using:
-//
-//	client.Municipality.Create().
-//		OnConflict(
-//			sql.ResolveWithNewValues(),
-//		).
-//		Exec(ctx)
-func (u *MunicipalityUpsertBulk) UpdateNewValues() *MunicipalityUpsertBulk {
-	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
-	return u
-}
-
-// Ignore sets each column to itself in case of conflict.
-// Using this option is equivalent to using:
-//
-//	client.Municipality.Create().
-//		OnConflict(sql.ResolveWithIgnore()).
-//		Exec(ctx)
-func (u *MunicipalityUpsertBulk) Ignore() *MunicipalityUpsertBulk {
-	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
-	return u
-}
-
-// DoNothing configures the conflict_action to `DO NOTHING`.
-// Supported only by SQLite and PostgreSQL.
-func (u *MunicipalityUpsertBulk) DoNothing() *MunicipalityUpsertBulk {
-	u.create.conflict = append(u.create.conflict, sql.DoNothing())
-	return u
-}
-
-// Update allows overriding fields `UPDATE` values. See the MunicipalityCreateBulk.OnConflict
-// documentation for more info.
-func (u *MunicipalityUpsertBulk) Update(set func(*MunicipalityUpsert)) *MunicipalityUpsertBulk {
-	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
-		set(&MunicipalityUpsert{UpdateSet: update})
-	}))
-	return u
-}
-
-// SetName sets the "name" field.
-func (u *MunicipalityUpsertBulk) SetName(v string) *MunicipalityUpsertBulk {
-	return u.Update(func(s *MunicipalityUpsert) {
-		s.SetName(v)
-	})
-}
-
-// UpdateName sets the "name" field to the value that was provided on create.
-func (u *MunicipalityUpsertBulk) UpdateName() *MunicipalityUpsertBulk {
-	return u.Update(func(s *MunicipalityUpsert) {
-		s.UpdateName()
-	})
-}
-
-// SetZipcode sets the "zipcode" field.
-func (u *MunicipalityUpsertBulk) SetZipcode(v string) *MunicipalityUpsertBulk {
-	return u.Update(func(s *MunicipalityUpsert) {
-		s.SetZipcode(v)
-	})
-}
-
-// UpdateZipcode sets the "zipcode" field to the value that was provided on create.
-func (u *MunicipalityUpsertBulk) UpdateZipcode() *MunicipalityUpsertBulk {
-	return u.Update(func(s *MunicipalityUpsert) {
-		s.UpdateZipcode()
-	})
-}
-
-// ClearZipcode clears the value of the "zipcode" field.
-func (u *MunicipalityUpsertBulk) ClearZipcode() *MunicipalityUpsertBulk {
-	return u.Update(func(s *MunicipalityUpsert) {
-		s.ClearZipcode()
-	})
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (u *MunicipalityUpsertBulk) SetCreatedAt(v time.Time) *MunicipalityUpsertBulk {
-	return u.Update(func(s *MunicipalityUpsert) {
-		s.SetCreatedAt(v)
-	})
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *MunicipalityUpsertBulk) UpdateCreatedAt() *MunicipalityUpsertBulk {
-	return u.Update(func(s *MunicipalityUpsert) {
-		s.UpdateCreatedAt()
-	})
-}
-
-// Exec executes the query.
-func (u *MunicipalityUpsertBulk) Exec(ctx context.Context) error {
-	for i, b := range u.create.builders {
-		if len(b.conflict) != 0 {
-			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the MunicipalityCreateBulk instead", i)
-		}
-	}
-	if len(u.create.conflict) == 0 {
-		return errors.New("ent: missing options for MunicipalityCreateBulk.OnConflict")
-	}
-	return u.create.Exec(ctx)
-}
-
-// ExecX is like Exec, but panics if an error occurs.
-func (u *MunicipalityUpsertBulk) ExecX(ctx context.Context) {
-	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

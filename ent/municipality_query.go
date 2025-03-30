@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"math"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -19,14 +20,11 @@ import (
 // MunicipalityQuery is the builder for querying Municipality entities.
 type MunicipalityQuery struct {
 	config
-	ctx             *QueryContext
-	order           []municipality.OrderOption
-	inters          []Interceptor
-	predicates      []predicate.Municipality
-	withMeshis      *MeshiQuery
-	modifiers       []func(*sql.Selector)
-	loadTotal       []func(context.Context, []*Municipality) error
-	withNamedMeshis map[string]*MeshiQuery
+	ctx        *QueryContext
+	order      []municipality.OrderOption
+	inters     []Interceptor
+	predicates []predicate.Municipality
+	withMeshis *MeshiQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -88,7 +86,7 @@ func (mq *MunicipalityQuery) QueryMeshis() *MeshiQuery {
 // First returns the first Municipality entity from the query.
 // Returns a *NotFoundError when no Municipality was found.
 func (mq *MunicipalityQuery) First(ctx context.Context) (*Municipality, error) {
-	nodes, err := mq.Limit(1).All(setContextOp(ctx, mq.ctx, "First"))
+	nodes, err := mq.Limit(1).All(setContextOp(ctx, mq.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +109,7 @@ func (mq *MunicipalityQuery) FirstX(ctx context.Context) *Municipality {
 // Returns a *NotFoundError when no Municipality ID was found.
 func (mq *MunicipalityQuery) FirstID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = mq.Limit(1).IDs(setContextOp(ctx, mq.ctx, "FirstID")); err != nil {
+	if ids, err = mq.Limit(1).IDs(setContextOp(ctx, mq.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -134,7 +132,7 @@ func (mq *MunicipalityQuery) FirstIDX(ctx context.Context) int {
 // Returns a *NotSingularError when more than one Municipality entity is found.
 // Returns a *NotFoundError when no Municipality entities are found.
 func (mq *MunicipalityQuery) Only(ctx context.Context) (*Municipality, error) {
-	nodes, err := mq.Limit(2).All(setContextOp(ctx, mq.ctx, "Only"))
+	nodes, err := mq.Limit(2).All(setContextOp(ctx, mq.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +160,7 @@ func (mq *MunicipalityQuery) OnlyX(ctx context.Context) *Municipality {
 // Returns a *NotFoundError when no entities are found.
 func (mq *MunicipalityQuery) OnlyID(ctx context.Context) (id int, err error) {
 	var ids []int
-	if ids, err = mq.Limit(2).IDs(setContextOp(ctx, mq.ctx, "OnlyID")); err != nil {
+	if ids, err = mq.Limit(2).IDs(setContextOp(ctx, mq.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -187,7 +185,7 @@ func (mq *MunicipalityQuery) OnlyIDX(ctx context.Context) int {
 
 // All executes the query and returns a list of Municipalities.
 func (mq *MunicipalityQuery) All(ctx context.Context) ([]*Municipality, error) {
-	ctx = setContextOp(ctx, mq.ctx, "All")
+	ctx = setContextOp(ctx, mq.ctx, ent.OpQueryAll)
 	if err := mq.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
@@ -209,7 +207,7 @@ func (mq *MunicipalityQuery) IDs(ctx context.Context) (ids []int, err error) {
 	if mq.ctx.Unique == nil && mq.path != nil {
 		mq.Unique(true)
 	}
-	ctx = setContextOp(ctx, mq.ctx, "IDs")
+	ctx = setContextOp(ctx, mq.ctx, ent.OpQueryIDs)
 	if err = mq.Select(municipality.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -227,7 +225,7 @@ func (mq *MunicipalityQuery) IDsX(ctx context.Context) []int {
 
 // Count returns the count of the given query.
 func (mq *MunicipalityQuery) Count(ctx context.Context) (int, error) {
-	ctx = setContextOp(ctx, mq.ctx, "Count")
+	ctx = setContextOp(ctx, mq.ctx, ent.OpQueryCount)
 	if err := mq.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
@@ -245,7 +243,7 @@ func (mq *MunicipalityQuery) CountX(ctx context.Context) int {
 
 // Exist returns true if the query has elements in the graph.
 func (mq *MunicipalityQuery) Exist(ctx context.Context) (bool, error) {
-	ctx = setContextOp(ctx, mq.ctx, "Exist")
+	ctx = setContextOp(ctx, mq.ctx, ent.OpQueryExist)
 	switch _, err := mq.FirstID(ctx); {
 	case IsNotFound(err):
 		return false, nil
@@ -386,9 +384,6 @@ func (mq *MunicipalityQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	if len(mq.modifiers) > 0 {
-		_spec.Modifiers = mq.modifiers
-	}
 	for i := range hooks {
 		hooks[i](ctx, _spec)
 	}
@@ -402,18 +397,6 @@ func (mq *MunicipalityQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 		if err := mq.loadMeshis(ctx, query, nodes,
 			func(n *Municipality) { n.Edges.Meshis = []*Meshi{} },
 			func(n *Municipality, e *Meshi) { n.Edges.Meshis = append(n.Edges.Meshis, e) }); err != nil {
-			return nil, err
-		}
-	}
-	for name, query := range mq.withNamedMeshis {
-		if err := mq.loadMeshis(ctx, query, nodes,
-			func(n *Municipality) { n.appendNamedMeshis(name) },
-			func(n *Municipality, e *Meshi) { n.appendNamedMeshis(name, e) }); err != nil {
-			return nil, err
-		}
-	}
-	for i := range mq.loadTotal {
-		if err := mq.loadTotal[i](ctx, nodes); err != nil {
 			return nil, err
 		}
 	}
@@ -454,9 +437,6 @@ func (mq *MunicipalityQuery) loadMeshis(ctx context.Context, query *MeshiQuery, 
 
 func (mq *MunicipalityQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := mq.querySpec()
-	if len(mq.modifiers) > 0 {
-		_spec.Modifiers = mq.modifiers
-	}
 	_spec.Node.Columns = mq.ctx.Fields
 	if len(mq.ctx.Fields) > 0 {
 		_spec.Unique = mq.ctx.Unique != nil && *mq.ctx.Unique
@@ -536,20 +516,6 @@ func (mq *MunicipalityQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	return selector
 }
 
-// WithNamedMeshis tells the query-builder to eager-load the nodes that are connected to the "meshis"
-// edge with the given name. The optional arguments are used to configure the query builder of the edge.
-func (mq *MunicipalityQuery) WithNamedMeshis(name string, opts ...func(*MeshiQuery)) *MunicipalityQuery {
-	query := (&MeshiClient{config: mq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	if mq.withNamedMeshis == nil {
-		mq.withNamedMeshis = make(map[string]*MeshiQuery)
-	}
-	mq.withNamedMeshis[name] = query
-	return mq
-}
-
 // MunicipalityGroupBy is the group-by builder for Municipality entities.
 type MunicipalityGroupBy struct {
 	selector
@@ -564,7 +530,7 @@ func (mgb *MunicipalityGroupBy) Aggregate(fns ...AggregateFunc) *MunicipalityGro
 
 // Scan applies the selector query and scans the result into the given value.
 func (mgb *MunicipalityGroupBy) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, mgb.build.ctx, "GroupBy")
+	ctx = setContextOp(ctx, mgb.build.ctx, ent.OpQueryGroupBy)
 	if err := mgb.build.prepareQuery(ctx); err != nil {
 		return err
 	}
@@ -612,7 +578,7 @@ func (ms *MunicipalitySelect) Aggregate(fns ...AggregateFunc) *MunicipalitySelec
 
 // Scan applies the selector query and scans the result into the given value.
 func (ms *MunicipalitySelect) Scan(ctx context.Context, v any) error {
-	ctx = setContextOp(ctx, ms.ctx, "Select")
+	ctx = setContextOp(ctx, ms.ctx, ent.OpQuerySelect)
 	if err := ms.prepareQuery(ctx); err != nil {
 		return err
 	}

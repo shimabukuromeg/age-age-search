@@ -52,19 +52,15 @@ type MeshiEdges struct {
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
-	// totalCount holds the count of the edges above.
-	totalCount [1]map[string]int
 }
 
 // MunicipalityOrErr returns the Municipality value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e MeshiEdges) MunicipalityOrErr() (*Municipality, error) {
-	if e.loadedTypes[0] {
-		if e.Municipality == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: municipality.Label}
-		}
+	if e.Municipality != nil {
 		return e.Municipality, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: municipality.Label}
 	}
 	return nil, &NotLoadedError{edge: "municipality"}
 }

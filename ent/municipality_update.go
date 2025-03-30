@@ -35,6 +35,14 @@ func (mu *MunicipalityUpdate) SetName(s string) *MunicipalityUpdate {
 	return mu
 }
 
+// SetNillableName sets the "name" field if the given value is not nil.
+func (mu *MunicipalityUpdate) SetNillableName(s *string) *MunicipalityUpdate {
+	if s != nil {
+		mu.SetName(*s)
+	}
+	return mu
+}
+
 // SetZipcode sets the "zipcode" field.
 func (mu *MunicipalityUpdate) SetZipcode(s string) *MunicipalityUpdate {
 	mu.mutation.SetZipcode(s)
@@ -226,6 +234,14 @@ type MunicipalityUpdateOne struct {
 // SetName sets the "name" field.
 func (muo *MunicipalityUpdateOne) SetName(s string) *MunicipalityUpdateOne {
 	muo.mutation.SetName(s)
+	return muo
+}
+
+// SetNillableName sets the "name" field if the given value is not nil.
+func (muo *MunicipalityUpdateOne) SetNillableName(s *string) *MunicipalityUpdateOne {
+	if s != nil {
+		muo.SetName(*s)
+	}
 	return muo
 }
 
