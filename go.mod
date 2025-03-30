@@ -1,6 +1,8 @@
 module github.com/shimabukuromeg/ageage-search
 
-go 1.20
+go 1.23.0
+
+toolchain go1.23.7
 
 require (
 	entgo.io/contrib v0.4.6-0.20230615102013-704944fdc0f6
@@ -42,4 +44,5 @@ require (
 	github.com/hashicorp/golang-lru/v2 v2.0.3 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	golang.org/x/net v0.10.0 // indirect
+	golang.org/x/time v0.11.0 // indirect
 )
