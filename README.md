@@ -31,11 +31,44 @@ $ ./ageage-collector
 
 If you specify -t postgres but do not specify -d or DSN, the tool will prompt you to provide the PostgreSQL connection information.
 
+### Command Options
+
+Various options are available for customizing the scraping process:
+
 ```bash
-# options
+# Scrape only the first page
+$ ./ageage-collector -target first
+
+# Scrape all pages
 $ ./ageage-collector -target all
+
+# Create database schema if it doesn't exist
 $ ./ageage-collector -isCreateSchema true
+
+# Run with 4 parallel workers (default is 1)
+$ ./ageage-collector -workers 4
+
+# Set rate limit to 2 requests per second (default is 1.0)
+$ ./ageage-collector -rps 2.0
+
+# Combined options example
+$ ./ageage-collector -target first -workers 4 -rps 1.0 -isCreateSchema true
 ```
+
+#### Parallel Scraping
+
+The tool now supports parallel scraping with multiple workers, which can significantly speed up the scraping process. Use the following options to control parallelism:
+
+- `-workers`: Set the number of concurrent workers (default: 1)
+- `-rps`: Set the maximum rate limit in requests per second (default: 1.0)
+
+For example, to scrape with 4 workers at a rate of 2 requests per second:
+
+```bash
+$ ./ageage-collector -workers 4 -rps 2.0
+```
+
+Note: Be mindful of the target website's load capacity when increasing these values.
 
 ### GraphQL Access
 
